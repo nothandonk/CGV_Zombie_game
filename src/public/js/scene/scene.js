@@ -7,7 +7,7 @@ class Scene {
     this.height = window.innerHeight;
 
     // Player state
-    this.moveSpeed = .5;
+    this.moveSpeed = 0.5;
     this.playerHeight = 2;
     this.gravity = 0.1;
     this.verticalVelocity = 0;
@@ -22,7 +22,7 @@ class Scene {
       45,
       this.width / this.height,
       1,
-      500,
+      500
     );
     this.camera.position.set(0, 0, 0);
     this.camera.lookAt(0, 0, 0);
@@ -58,8 +58,6 @@ class Scene {
     window.addEventListener("keydown", (e) => (this.keysPressed[e.key] = true));
     window.addEventListener("keyup", (e) => (this.keysPressed[e.key] = false));
 
-
-
     // Prevent context menu on right click
     // this.renderer.domElement.addEventListener("contextmenu", (e) =>
     //   e.preventDefault(),
@@ -82,7 +80,7 @@ class Scene {
       width,
       depth,
       widthSegments,
-      depthSegments,
+      depthSegments
     );
 
     const vertices = geometry.attributes.position.array;
@@ -109,49 +107,53 @@ class Scene {
 
   getTerrainHeight(x, z) {
     if (!this.groundMesh) return 0;
-  
-    const width = 600;   // Same as the terrain size
+
+    const width = 600; // Same as the terrain size
     const widthSegments = 600;
     const heightArray = this.groundMesh.geometry.attributes.position.array;
-  
+
     // Scale x and z to match terrain coordinates
     const gridX = ((x + width / 2) / width) * widthSegments;
     const gridZ = ((z + width / 2) / width) * widthSegments;
-  
+
     // Get the integer part of the position and fractional part for interpolation
     const x1 = Math.floor(gridX);
     const z1 = Math.floor(gridZ);
     const x2 = x1 + 1;
     const z2 = z1 + 1;
-  
+
     // Make sure indices don't exceed the terrain boundaries
     const clampedX1 = Math.max(0, Math.min(x1, widthSegments));
     const clampedZ1 = Math.max(0, Math.min(z1, widthSegments));
     const clampedX2 = Math.max(0, Math.min(x2, widthSegments));
     const clampedZ2 = Math.max(0, Math.min(z2, widthSegments));
-  
+
     // Get the height values at the four corners around the camera
-    const height11 = heightArray[(clampedX1 + clampedZ1 * (widthSegments + 1)) * 3 + 2];
-    const height12 = heightArray[(clampedX1 + clampedZ2 * (widthSegments + 1)) * 3 + 2];
-    const height21 = heightArray[(clampedX2 + clampedZ1 * (widthSegments + 1)) * 3 + 2];
-    const height22 = heightArray[(clampedX2 + clampedZ2 * (widthSegments + 1)) * 3 + 2];
-  
+    const height11 =
+      heightArray[(clampedX1 + clampedZ1 * (widthSegments + 1)) * 3 + 2];
+    const height12 =
+      heightArray[(clampedX1 + clampedZ2 * (widthSegments + 1)) * 3 + 2];
+    const height21 =
+      heightArray[(clampedX2 + clampedZ1 * (widthSegments + 1)) * 3 + 2];
+    const height22 =
+      heightArray[(clampedX2 + clampedZ2 * (widthSegments + 1)) * 3 + 2];
+
     // Fractional distances from the closest grid points
     const fracX = gridX - x1;
     const fracZ = gridZ - z1;
-  
+
     // Perform bilinear interpolation between the four surrounding points
-    const height = 
+    const height =
       (1 - fracX) * ((1 - fracZ) * height11 + fracZ * height12) +
       fracX * ((1 - fracZ) * height21 + fracZ * height22);
-  
+
     return height;
   }
 
   positionCameraAboveTerrain() {
     const terrainHeight = this.getTerrainHeight(
       this.camera.position.x,
-      this.camera.position.z,
+      this.camera.position.z
     );
     this.camera.position.y = terrainHeight + this.playerHeight;
   }
@@ -163,12 +165,10 @@ class Scene {
     forward.applyQuaternion(this.camera.quaternion);
     forward.y = 0; // Keep movement horizontal
     forward.normalize();
-    right.applyQuaternion(this.camera.quaternion)
-    right.y = 0
+    right.applyQuaternion(this.camera.quaternion);
+    right.y = 0;
     right.normalize();
 
-    
-  
     // Handle movement
     if (this.keysPressed["w"] || this.keysPressed["s"]) {
       const moveAmount = this.keysPressed["w"]
@@ -176,27 +176,23 @@ class Scene {
         : -this.moveSpeed;
       const movement = forward.clone().multiplyScalar(moveAmount);
       this.camera.position.add(movement);
-    }else if(this.keysPressed["a"] || this.keysPressed["d"]){
+    } else if (this.keysPressed["a"] || this.keysPressed["d"]) {
       const moveAmount = this.keysPressed["d"]
         ? this.moveSpeed
         : -this.moveSpeed;
       const movement = right.clone().multiplyScalar(moveAmount);
       this.camera.position.add(movement);
     }
-  
-    // Handle rotation in 2D
 
-    
-
-
-
-    
     // Create a quaternion to store the rotation
-    const rotationSpeed = 0.02;  // Adjust this for the rotation speed
+    const rotationSpeed = 0.02; // Adjust this for the rotation speed
 
     // Get the camera's current rotation as Euler angles
-    const rotation = new THREE.Euler().setFromQuaternion(this.camera.quaternion, 'YXZ');
-  
+    const rotation = new THREE.Euler().setFromQuaternion(
+      this.camera.quaternion,
+      "YXZ"
+    );
+
     // Yaw (rotate around the world y-axis)
     if (this.keysPressed["ArrowLeft"]) {
       rotation.y += rotationSpeed;
@@ -204,7 +200,7 @@ class Scene {
     if (this.keysPressed["ArrowRight"]) {
       rotation.y -= rotationSpeed;
     }
-  
+
     // Pitch (rotate around the world x-axis)
     if (this.keysPressed["ArrowUp"]) {
       rotation.x += rotationSpeed;
@@ -212,13 +208,38 @@ class Scene {
     if (this.keysPressed["ArrowDown"]) {
       rotation.x -= rotationSpeed;
     }
-  
+
     // Clamp the pitch to prevent over-rotation
-    rotation.x = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, rotation.x));
-  
+    rotation.x = Math.max(
+      -Math.PI / 2 + 0.01,
+      Math.min(Math.PI / 2 - 0.01, rotation.x)
+    );
+
     // Update the camera's quaternion from the adjusted Euler angles
     this.camera.quaternion.setFromEuler(rotation);
-}
+
+    // Apply gravity and terrain collision
+    const terrainHeight = this.getTerrainHeight(
+      this.camera.position.x,
+      this.camera.position.z
+    );
+
+    const targetHeight = terrainHeight + this.playerHeight;
+
+    if (this.camera.position.y > targetHeight) {
+      this.verticalVelocity -= this.gravity;
+      this.camera.position.y += this.verticalVelocity;
+    }
+
+    if (this.camera.position.y < targetHeight) {
+      this.camera.position.y = targetHeight;
+      this.verticalVelocity = 0;
+    }
+
+    // Update player axes helper
+    this.playerAxesHelper.position.copy(this.camera.position);
+    this.playerAxesHelper.rotation.copy(this.camera.rotation);
+  }
 
   animate = () => {
     requestAnimationFrame(this.animate);
