@@ -5,13 +5,17 @@ class Scene {
     this.scene = new THREE.Scene();
     this.width = window.innerWidth;
     this.height = window.innerHeight;
+    this.mouseSensitivity = 0.002;
+    this.mouseX = 0;
+    this.mouseY = 0;
+   
 
     // Player state
     this.moveSpeed = 0.5;
     this.playerHeight = 2;
-    this.gravity = 0.1;
+    this.gravity = 0.05;
+    this.jumpForce = 2;
     this.verticalVelocity = 0;
-    this.mouseSensitivity = 0.002;
 
     // Mouse state
     this.mouseButtons = { left: false, right: false };
@@ -50,6 +54,37 @@ class Scene {
 
     // Set up controls
     this.setupControls();
+
+    this.mouseControls = false;
+
+    document.addEventListener("mousemove", this.onMouseMove.bind(this));
+    // Lock the pointer when clicking on the canvas
+    this.renderer.domElement.addEventListener("click", () => {
+      this.renderer.domElement.requestPointerLock();
+      this.mouseControls = true;
+
+    });
+
+    // Listen for the keydown event for key presses
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") { // Check for Escape key
+          // Unlock the pointer
+          if (document.pointerLockElement) {
+              document.exitPointerLock(); // Exit pointer lock
+              this.mouseControls = false; // Disable mouse controls
+          }
+      }
+  });
+  }
+
+  onMouseMove(event) {
+    if (document.pointerLockElement === this.renderer.domElement) {
+      this.mouseX += event.movementX * this.mouseSensitivity;
+      this.mouseY += event.movementY * this.mouseSensitivity;
+
+      // Clamp vertical rotation
+      this.mouseY = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.mouseY));
+    }
   }
 
   setupControls() {
@@ -170,53 +205,72 @@ class Scene {
     right.normalize();
 
     // Handle movement
-    if (this.keysPressed["w"] || this.keysPressed["s"]) {
-      const moveAmount = this.keysPressed["w"]
-        ? this.moveSpeed
-        : -this.moveSpeed;
+    if (this.keysPressed["w"]) {
+      const moveAmount = this.moveSpeed;
       const movement = forward.clone().multiplyScalar(moveAmount);
       this.camera.position.add(movement);
-    } else if (this.keysPressed["a"] || this.keysPressed["d"]) {
-      const moveAmount = this.keysPressed["d"]
-        ? this.moveSpeed
-        : -this.moveSpeed;
+    }
+
+    if (this.keysPressed["s"]) {
+      const moveAmount = -this.moveSpeed;
+      const movement = forward.clone().multiplyScalar(moveAmount);
+      this.camera.position.add(movement);
+    }
+
+    if (this.keysPressed["d"]) {
+      const moveAmount = this.moveSpeed;
       const movement = right.clone().multiplyScalar(moveAmount);
       this.camera.position.add(movement);
     }
 
-    // Create a quaternion to store the rotation
-    const rotationSpeed = 0.02; // Adjust this for the rotation speed
-
-    // Get the camera's current rotation as Euler angles
-    const rotation = new THREE.Euler().setFromQuaternion(
-      this.camera.quaternion,
-      "YXZ"
-    );
-
-    // Yaw (rotate around the world y-axis)
-    if (this.keysPressed["ArrowLeft"]) {
-      rotation.y += rotationSpeed;
-    }
-    if (this.keysPressed["ArrowRight"]) {
-      rotation.y -= rotationSpeed;
+    if (this.keysPressed["a"]) {
+      const moveAmount = -this.moveSpeed;
+      const movement = right.clone().multiplyScalar(moveAmount);
+      this.camera.position.add(movement);
     }
 
-    // Pitch (rotate around the world x-axis)
-    if (this.keysPressed["ArrowUp"]) {
-      rotation.x += rotationSpeed;
-    }
-    if (this.keysPressed["ArrowDown"]) {
-      rotation.x -= rotationSpeed;
-    }
+    if (this.mouseControls) {
+      // Handle rotation (now using mouse input)
+      const rotation = new THREE.Euler(0, 0, 0, "YXZ");
+      rotation.x = -this.mouseY;
+      rotation.y = -this.mouseX;
 
-    // Clamp the pitch to prevent over-rotation
-    rotation.x = Math.max(
-      -Math.PI / 2 + 0.01,
-      Math.min(Math.PI / 2 - 0.01, rotation.x)
-    );
+      this.camera.quaternion.setFromEuler(rotation);
+    } else {
+      // Create a quaternion to store the rotation
+      const rotationSpeed = 0.02; // Adjust this for the rotation speed
 
-    // Update the camera's quaternion from the adjusted Euler angles
-    this.camera.quaternion.setFromEuler(rotation);
+      // Get the camera's current rotation as Euler angles
+      const rotation = new THREE.Euler().setFromQuaternion(
+        this.camera.quaternion,
+        "YXZ"
+      );
+
+      // Yaw (rotate around the world y-axis)
+      if (this.keysPressed["ArrowLeft"]) {
+        rotation.y += rotationSpeed;
+      }
+      if (this.keysPressed["ArrowRight"]) {
+        rotation.y -= rotationSpeed;
+      }
+
+      // Pitch (rotate around the world x-axis)
+      if (this.keysPressed["ArrowUp"]) {
+        rotation.x += rotationSpeed;
+      }
+      if (this.keysPressed["ArrowDown"]) {
+        rotation.x -= rotationSpeed;
+      }
+
+      // Clamp the pitch to prevent over-rotation
+      rotation.x = Math.max(
+        -Math.PI / 2 + 0.01,
+        Math.min(Math.PI / 2 - 0.01, rotation.x)
+      );
+
+      // Update the camera's quaternion from the adjusted Euler angles
+      this.camera.quaternion.setFromEuler(rotation);
+    }
 
     // Apply gravity and terrain collision
     const terrainHeight = this.getTerrainHeight(
@@ -225,6 +279,11 @@ class Scene {
     );
 
     const targetHeight = terrainHeight + this.playerHeight;
+
+    // Handle jumping
+    if (this.keysPressed[" "] && this.camera.position.y <= targetHeight) {
+      this.verticalVelocity = this.jumpForce;
+    }
 
     if (this.camera.position.y > targetHeight) {
       this.verticalVelocity -= this.gravity;
@@ -235,7 +294,6 @@ class Scene {
       this.camera.position.y = targetHeight;
       this.verticalVelocity = 0;
     }
-
     // Update player axes helper
     this.playerAxesHelper.position.copy(this.camera.position);
     this.playerAxesHelper.rotation.copy(this.camera.rotation);
