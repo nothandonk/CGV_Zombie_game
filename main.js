@@ -19,3 +19,16 @@ function animate() {
     renderer.render( scene, camera );
 }
 renderer.setAnimationLoop( animate );
+
+//add scene from sketchfab
+//const loader = new GLTFLoader();
+
+// loader.load( '/scene/postwar_city_-_exterior_scene .glb', function ( gltf ) {
+
+// 	scene.add( gltf.scene );
+
+// }, undefined, function ( error ) {
+
+// 	console.error( error );
+
+// } );
