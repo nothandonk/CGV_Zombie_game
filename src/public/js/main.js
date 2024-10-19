@@ -7,14 +7,14 @@ document.addEventListener("DOMContentLoaded", function () {
   world.init();
   const gun = new GLTFObject(
     "/rovelver1.0.0.glb",
-    [0, 0, -10],
+    [3, -3, -10],
     [1, 1, 1],
     world,
     true,
     true,
   );
 
-  gun.setRotation();
+  gun.setRotation([0, Math.PI / 2, 0]);
 
   world.animate();
 });

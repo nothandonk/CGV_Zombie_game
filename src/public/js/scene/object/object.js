@@ -41,14 +41,27 @@ export class GLTFObject {
 
   setPosition() {}
 
-  setRotation() {}
+  setRotation(rotation) {
+    this.scene.rotation.set(rotation[0], rotation[1], rotation[2]);
+  }
 
   render() {
     if (this.followCamera) {
       this.scene.position.set(
-        this.world.camera.position.x + this.position[0],
-        this.world.camera.position.y + this.position[1],
-        this.world.camera.position.z + this.position[2],
+        //handle translation
+        this.world.camera.position.x +
+          Math.sin(this.world.camera.rotation.y + Math.PI / 6) * 3,
+        this.world.camera.position.y - 2,
+        this.world.camera.position.z -
+          Math.cos(this.world.camera.rotation.y + Math.PI / 6) * 8,
+      );
+
+      //handle rotation
+      console.log(this.scene);
+      this.scene.rotation.set(
+        this.world.camera.rotation.x,
+        this.world.camera.rotation.y - Math.PI / 2,
+        this.world.camera.rotation.z,
       );
     } else {
       this.scene.position.set(
