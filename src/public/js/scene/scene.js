@@ -1,6 +1,7 @@
 import Minimap from "../hud/minimap.js";
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
+import { GLTFObject } from "./object/object.js";
 
 class Scene {
   constructor() {
@@ -35,8 +36,9 @@ class Scene {
     this.camera.position.set(0, 0, 0);
     this.camera.lookAt(0, 0, 0);
     this.camera.logarithmicDepthBuffer = true; // Enable logarithmic depth buffer
+    this.objects = [];
 
-    // Set up renderer
+    // Set up renderer1
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(this.width, this.height);
     document.body.appendChild(this.renderer.domElement);
@@ -90,6 +92,16 @@ class Scene {
     }
   }
 
+  addObject(obj) {
+    this.objects = [...this.objects, obj];
+    this.scene.add(obj.scene);
+  }
+
+  removeObject(id) {
+    const newObjects = this.objects.filter((obj) => obj.id != id);
+    this.objects = newObjects;
+  }
+
   setupControls() {
     // Keyboard controls
     this.keysPressed = {};
@@ -111,41 +123,8 @@ class Scene {
   async init() {
     this.generateTerrain();
     this.positionCameraAboveTerrain();
-    this.loadPlayer();
-    // this.loadBuildings();
+    this.loadImmutableObjects();
     this.animate();
-  }
-
-  loadBuildings() {
-    const gltfLoader = new GLTFLoader();
-    let scene;
-    gltfLoader.load("/house.glb", (gltf) => {
-      scene = gltf.scene;
-      scene.scale.set(0.5, 0.5, 0.5); // Adjust scale if needed
-      scene.position.set(0, 5, 0); // Position th
-      this.scene.add(scene);
-    });
-  }
-
-  loadPlayer() {
-    // Load the 3D Gun Model using GLTFLoader
-    const gltfLoader = new GLTFLoader();
-    const gun = gltfLoader.load(
-      "/rovelver1.0.0.glb",
-      (gltf) => {
-        const gunModel = gltf.scene;
-        gunModel.scale.set(0.5, 0.5, 0.5); // Adjust scale if needed
-        gunModel.position.set(0, 5, 0); // Position the gun in the center
-        gunModel;
-        this.scene.add(gunModel);
-      },
-      function (xhr) {
-        console.log((xhr.loaded / xhr.total) * 100 + "% loaded"); // Loading progress
-      },
-      function (error) {
-        console.error("An error happened while loading the model", error);
-      },
-    );
   }
 
   generateTerrain() {
@@ -454,9 +433,27 @@ class Scene {
     this.playerAxesHelper.rotation.copy(this.camera.rotation);
   }
 
+  loadMutableObjects() {
+    this.objects.forEach((obj) => {
+      if (obj.mutable) {
+        obj.render();
+      }
+    });
+  }
+
+  loadImmutableObjects() {
+    this.objects.forEach((obj) => {
+      if (!obj.mutable) {
+        obj.render();
+      }
+    });
+  }
+
   animate = () => {
     requestAnimationFrame(this.animate);
     this.updatePlayerMovement();
+    //render objects
+    this.loadMutableObjects();
     this.renderer.render(this.scene, this.camera);
 
     //draw minimap
