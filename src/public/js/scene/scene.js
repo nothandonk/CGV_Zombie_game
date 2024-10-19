@@ -1,10 +1,6 @@
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.112/examples/jsm/controls/OrbitControls.js";
 import Minimap from "../hud/minimap.js";
-import { OBJLoader } from "https://cdn.jsdelivr.net/npm/three@0.112/examples/jsm/loaders/OBJLoader.js";
-import { MTLLoader } from "https://cdn.jsdelivr.net/npm/three@0.112/examples/jsm/loaders/MTLLoader.js";
-import { EXRLoader } from "https://cdn.jsdelivr.net/npm/three@0.112/examples/jsm/loaders/EXRLoader.js";
-import { RGBELoader } from "https://cdn.jsdelivr.net/npm/three@0.112/examples/jsm/loaders/RGBELoader.js";
-import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.112/examples/jsm/loaders/GLTFLoader.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
+import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
 
 class Scene {
   constructor() {
@@ -34,7 +30,7 @@ class Scene {
       45,
       this.width / this.height,
       1,
-      5000,
+      3000,
     );
     this.camera.position.set(0, 0, 0);
     this.camera.lookAt(0, 0, 0);
@@ -116,7 +112,19 @@ class Scene {
     this.generateTerrain();
     this.positionCameraAboveTerrain();
     this.loadPlayer();
+    // this.loadBuildings();
     this.animate();
+  }
+
+  loadBuildings() {
+    const gltfLoader = new GLTFLoader();
+    let scene;
+    gltfLoader.load("/house.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(0.5, 0.5, 0.5); // Adjust scale if needed
+      scene.position.set(0, 5, 0); // Position th
+      this.scene.add(scene);
+    });
   }
 
   loadPlayer() {
@@ -124,11 +132,12 @@ class Scene {
     const gltfLoader = new GLTFLoader();
     const gun = gltfLoader.load(
       "/rovelver1.0.0.glb",
-      function (gltf) {
+      (gltf) => {
         const gunModel = gltf.scene;
         gunModel.scale.set(0.5, 0.5, 0.5); // Adjust scale if needed
         gunModel.position.set(0, 5, 0); // Position the gun in the center
-        return gunModel;
+        gunModel;
+        this.scene.add(gunModel);
       },
       function (xhr) {
         console.log((xhr.loaded / xhr.total) * 100 + "% loaded"); // Loading progress
@@ -137,8 +146,6 @@ class Scene {
         console.error("An error happened while loading the model", error);
       },
     );
-
-    this.scene.add(gun);
   }
 
   generateTerrain() {
@@ -179,69 +186,44 @@ class Scene {
 
     geometry.computeVertexNormals();
 
-    const texture = new THREE.TextureLoader().load(
-      "http://localhost:3000/textures/dirt-ground.png",
-      (texture) => {
-        texture.format = THREE.RGBFormat;
-        texture.type = THREE.UnsignedByteType;
-        texture.anisotropy = 16;
-      },
-    );
-
-    const material = new THREE.MeshStandardMaterial({
-      // color: 0x88cc88,
-      // wireframe: true,
-      map: texture,
-    });
+    const material = new THREE.MeshStandardMaterial({});
 
     this.groundMesh = new THREE.Mesh(geometry, material);
     this.groundMesh.rotation.x = -Math.PI / 2;
     this.scene.add(this.groundMesh);
 
-    // Load the 3D model
-    // const loader = new OBJLoader();
-    // loader.load("http://localhost:3000/fence/fence.obj", (obj) => {
-    //   // Load the materials
-    //   const mtlLoader = new MTLLoader();
-    //   mtlLoader.load("http://localhost:3000/fence/fence.mtl", (mtl) => {
-    //     // Load the textures
-    //     const textureLoader = new THREE.TextureLoader();
-    //     const fanceTexture = textureLoader.load(
-    //       "http://localhost:3000/fence/fance.jpg",
-    //     );
-    //     const frontTexture = textureLoader.load(
-    //       "http://localhost:3000/fence/front.png",
-    //     );
-    //     const lrftTexture = textureLoader.load(
-    //       "http://localhost:3000/fence/lrft.png",
-    //     );
-    //     const geatTexture = textureLoader.load(
-    //       "http://localhost:3000/fence/geat.png",
-    //     );
+    // Load FBX model
+    // const loader = new GLTFLoader();
+    // loader.load(
+    //   "/textures/stone_floor.glb",
+    //   (gltf) => {
+    //     const tile = gltf.scene;
+    //     tile.scale.set(1, 1, 1); // Scale the tile to fit the ground if necessary
 
-    //     // Assign the materials and textures
-    //     obj.traverse((child) => {
-    //       if (child.isMesh) {
-    //         child.material = new THREE.MeshBasicMaterial({
-    //           map: fanceTexture,
-    //           normalMap: frontTexture,
-    //           roughnessMap: lrftTexture,
-    //           metalnessMap: geatTexture,
-    //         });
+    //     const tileSize = 1; // Adjust based on your GLB model's size
+    //     const tilesPerRow = Math.ceil(width / tileSize);
+    //     const tilesPerColumn = Math.ceil(width / tileSize);
+
+    //     // Duplicate and position the tiles in a grid to cover the ground
+    //     for (let i = 0; i < tilesPerRow; i++) {
+    //       for (let j = 0; j < tilesPerColumn; j++) {
+    //         const tileClone = tile.clone(); // Clone the tile for each position
+    //         tileClone.position.set(
+    //           i * tileSize - width / 2 + tileSize / 2,
+    //           0,
+    //           j * tileSize - width / 2 + tileSize / 2,
+    //         );
+    //         this.scene.add(tileClone);
     //       }
-    //     });
-
-    //     // Resize the fence
-    //     obj.scale.set(10, 10, 10);
-
-    //     // Resize the fence
-    //     obj.scale.set(10, 10, 10);
-
-    //     // Place multiple fences along the perimeter
-    //     this.placeFencesAlongPerimeter(obj, 0, -10, 10, 10);
-    //   });
-    // });
+    //     }
+    //   },
+    //   undefined,
+    //   function (error) {
+    //     console.error("An error occurred while loading the GLB model:", error);
+    //   },
+    // );
   }
+
   getTerrainHeight(x, z) {
     if (!this.groundMesh) return 0;
 
