@@ -1,6 +1,9 @@
 import Minimap from "../hud/minimap.js";
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
+import { RGBELoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/RGBELoader.js";
+
+
 
 class Scene {
   constructor() {
@@ -42,8 +45,11 @@ class Scene {
     document.body.appendChild(this.renderer.domElement);
 
     // Set up lights
-    this.ambientLight = new THREE.AmbientLight(0x404040);
-    this.scene.add(this.ambientLight);
+    //this.ambientLight = new THREE.AmbientLight(0x404040);
+    //this.scene.add(this.ambientLight);
+
+    this.ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+		this.scene.add(this.ambient);
 
     this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     this.directionalLight.position.set(50, 50, 50);
@@ -112,7 +118,9 @@ class Scene {
     this.generateTerrain();
     this.positionCameraAboveTerrain();
     this.loadPlayer();
-    // this.loadBuildings();
+    this.loadBuildings();
+    this.loadpath();
+    this.loadcar();
     this.animate();
   }
 
@@ -121,11 +129,32 @@ class Scene {
     let scene;
     gltfLoader.load("/house.glb", (gltf) => {
       scene = gltf.scene;
-      scene.scale.set(0.5, 0.5, 0.5); // Adjust scale if needed
-      scene.position.set(0, 5, 0); // Position th
+      scene.scale.set(5, 5, 5); // Adjust scale if needed
+      scene.position.set(10, 0, 200); // Position th
       this.scene.add(scene);
     });
   }
+  loadpath() {
+    const gltfLoader = new GLTFLoader();
+    let scene;
+    gltfLoader.load("/way_path_blocks.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(200, 200, 5); // Adjust scale if needed
+      scene.position.set(0, 0, -200); // Position th
+      this.scene.add(scene);
+    });
+  }
+    loadcar() {
+    const gltfLoader = new GLTFLoader();
+    let scene;
+    gltfLoader.load("/old_car_wreck.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(0.4, 0.4, 0.4); // Adjust scale if needed
+      scene.position.set(-90, 0, 200); // Position thxv
+      this.scene.add(scene);
+    });
+  }
+
 
   loadPlayer() {
     // Load the 3D Gun Model using GLTFLoader
@@ -156,16 +185,26 @@ class Scene {
     const depthSegments = 2000;
 
     //skybox
-    const textureLoader = new THREE.TextureLoader();
-    const skyboxGeometry = new THREE.BoxGeometry(width, depth, depth);
-    const skyboxMaterial = new THREE.MeshBasicMaterial({
-      map: textureLoader.load("http://localhost:3000/skybox/overcast.png"),
-      side: THREE.BackSide,
-      transparent: true,
+    // const textureLoader = new THREE.TextureLoader();
+    // const skyboxGeometry = new THREE.BoxGeometry(width, depth, depth);
+    // const skyboxMaterial = new THREE.MeshBasicMaterial({
+    //   map: textureLoader.load("http://localhost:3000/skybox/overcast.png"),
+    //   side: THREE.BackSide,
+    //   transparent: true,
+    // });
+
+    // const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+    // this.scene.add(skybox);
+    const rgbeLoader = new RGBELoader();
+    rgbeLoader.load('/clarens_midday_4k.hdr', (hdrTexture) => {
+      hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
+      this.scene.environment = hdrTexture;
+      this.scene.environment.intensity = 0.05;
+      this.scene.background = hdrTexture; // Set the HDR as the background
+
+      //this.renderer.toneMappingExposure = 0.5;
     });
 
-    const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
-    this.scene.add(skybox);
 
     const geometry = new THREE.PlaneGeometry(
       width,
@@ -186,7 +225,7 @@ class Scene {
 
     geometry.computeVertexNormals();
 
-    const material = new THREE.MeshStandardMaterial({});
+    const material = new THREE.MeshStandardMaterial();
 
     this.groundMesh = new THREE.Mesh(geometry, material);
     this.groundMesh.rotation.x = -Math.PI / 2;
