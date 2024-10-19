@@ -40,6 +40,9 @@ export class GLTFObject {
   }
 
   setPosition() {}
+
+  setRotation() {}
+
   render() {
     if (this.followCamera) {
       this.scene.position.set(

@@ -14,5 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
     true,
   );
 
+  gun.setRotation();
+
   world.animate();
 });
