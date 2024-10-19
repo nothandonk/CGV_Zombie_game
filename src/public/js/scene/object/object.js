@@ -31,9 +31,9 @@ export class GLTFObject {
         );
       } else {
         _.position.set(this.position[0], this.position[1], this.position[2]);
-        this.scene = _;
-        this.world.addObject(this);
       }
+      this.scene = _;
+      this.world.addObject(this);
     });
     this.mutable = mutable;
     this.rerender = false;

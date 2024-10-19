@@ -7,19 +7,12 @@ document.addEventListener("DOMContentLoaded", function () {
   world.init();
   const gun = new GLTFObject(
     "/rovelver1.0.0.glb",
-    [0, -10, -3],
+    [0, 0, -10],
     [1, 1, 1],
     world,
     true,
     true,
   );
-  const gun1 = new GLTFObject(
-    "/rovelver1.0.0.glb",
-    [0, 10, 3],
-    [1, 1, 1],
-    world,
-    true,
-    true,
-  );
+
   world.animate();
 });
