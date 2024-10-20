@@ -2,7 +2,7 @@ import Minimap from "../hud/minimap.js";
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
 import { RGBELoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/RGBELoader.js";
-
+import LoadingScreen from "../LoadingScreen.js";
 
 
 class Scene {
@@ -84,7 +84,63 @@ class Scene {
         this.mouseControls = false; // Disable mouse controls
       }
     });
+    this.loadingScreen = new LoadingScreen();
+    this.loadingManager = new THREE.LoadingManager(
+      () => {
+        this.onLoadingComplete();
+      },
+      (itemUrl, itemsLoaded, itemsTotal) => {
+        const progressPercentage = (itemsLoaded/itemsTotal)*100;
+        this.loadingScreen.updateProgress(progressPercentage);
+      }
+    );
+    this.textureLoader = new THREE.TextureLoader(this.loadingManager);
   }
+  onLoadingComplete (){
+    this.loadingScreen.loadHUD();
+    console.log("Loading complete, initializing HUD and hiding loading screen.");
+    //this.initHUD();
+    this.loadingScreen.hide();
+    console.log("Loading screen should be hidden now.");
+    this.animate();
+  }
+
+ /* initHUD() {
+    // Initialize your HUD components here
+    // For example:
+    this.updateHealth(100);
+    this.updateStamina(100);
+    this.updateScore(0);
+    this.updateAmmo(100);
+    
+    // Initialize minimap
+    this.initMinimap();
+  }
+  
+  updateHealth(value) {
+    document.getElementById('health-bar-fill').style.width = `${value}%`;
+  }
+  
+  updateStamina(value) {
+    document.getElementById('stamina-bar-fill').style.width = `${value}%`;
+  }
+  
+  updateScore(value) {
+    document.getElementById('score').textContent = value;
+  }
+  
+  updateAmmo(value) {
+    document.getElementById('ammo').textContent = value;
+  }
+  
+  initMinimap() {
+    // Initialize your minimap here
+    // This is just a placeholder, replace with your actual minimap initialization
+    const minimap = document.getElementById('minimap');
+    const ctx = minimap.getContext('2d');
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, 100, 100);
+  }*/
 
   onMouseMove(event) {
     if (document.pointerLockElement === this.renderer.domElement) {
@@ -115,27 +171,29 @@ class Scene {
   }
 
   async init() {
+    this.loadingScreen.show();
     this.generateTerrain();
     this.positionCameraAboveTerrain();
     this.loadPlayer();
     this.loadBuildings();
     this.loadpath();
     this.loadcar();
-    this.animate();
+    //this.animate();
+    //this.scene.environment.intensity = 0.3;
   }
 
   loadBuildings() {
-    const gltfLoader = new GLTFLoader();
+    const gltfLoader = new GLTFLoader(this.loadingManager);
     let scene;
     gltfLoader.load("/house.glb", (gltf) => {
       scene = gltf.scene;
-      scene.scale.set(5, 5, 5); // Adjust scale if needed
+      scene.scale.set(15, 15, 15); // Adjust scale if needed
       scene.position.set(10, 0, 200); // Position th
       this.scene.add(scene);
     });
   }
   loadpath() {
-    const gltfLoader = new GLTFLoader();
+    const gltfLoader = new GLTFLoader(this.loadingManager);
     let scene;
     gltfLoader.load("/way_path_blocks.glb", (gltf) => {
       scene = gltf.scene;
@@ -145,7 +203,7 @@ class Scene {
     });
   }
     loadcar() {
-    const gltfLoader = new GLTFLoader();
+    const gltfLoader = new GLTFLoader(this.loadingManager);
     let scene;
     gltfLoader.load("/old_car_wreck.glb", (gltf) => {
       scene = gltf.scene;
@@ -158,7 +216,7 @@ class Scene {
 
   loadPlayer() {
     // Load the 3D Gun Model using GLTFLoader
-    const gltfLoader = new GLTFLoader();
+    const gltfLoader = new GLTFLoader(this.loadingManager);
     const gun = gltfLoader.load(
       "/rovelver1.0.0.glb",
       (gltf) => {
@@ -184,6 +242,7 @@ class Scene {
     const widthSegments = 2000;
     const depthSegments = 2000;
 
+    
     //skybox
     // const textureLoader = new THREE.TextureLoader();
     // const skyboxGeometry = new THREE.BoxGeometry(width, depth, depth);
@@ -195,11 +254,11 @@ class Scene {
 
     // const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
     // this.scene.add(skybox);
-    const rgbeLoader = new RGBELoader();
-    rgbeLoader.load('/clarens_midday_4k.hdr', (hdrTexture) => {
+    const rgbeLoader = new RGBELoader(this.loadingManager);
+    rgbeLoader.load('/overcast_soil_2_4k.hdr', (hdrTexture) => {
       hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
       this.scene.environment = hdrTexture;
-      this.scene.environment.intensity = 0.05;
+      this.scene.environment.intensity = 0.5;
       this.scene.background = hdrTexture; // Set the HDR as the background
 
       //this.renderer.toneMappingExposure = 0.5;
@@ -222,47 +281,83 @@ class Scene {
       const height = noise.perlin2(x / lambda, y / lambda);
       vertices[i + 2] = height * 10;
     }
-
+    //floor
+    const texture = this.textureLoader.load('/textures/thesoil.jpg');
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(100, 100);
     geometry.computeVertexNormals();
 
-    const material = new THREE.MeshStandardMaterial();
+    const material = new THREE.MeshStandardMaterial({
+      map: texture,
+      roughness: 0.8,
+      color: 0x666666,
+      //metalness: 0.2,
+    });
 
     this.groundMesh = new THREE.Mesh(geometry, material);
     this.groundMesh.rotation.x = -Math.PI / 2;
     this.scene.add(this.groundMesh);
 
+    this.adjustSceneLighting();
+    
     // Load FBX model
-    // const loader = new GLTFLoader();
-    // loader.load(
-    //   "/textures/stone_floor.glb",
-    //   (gltf) => {
-    //     const tile = gltf.scene;
-    //     tile.scale.set(1, 1, 1); // Scale the tile to fit the ground if necessary
+    /* const loader = new GLTFLoader();
+     loader.load(
+       "/textures/stone_floor.glb",
+       (gltf) => {
+         const tile = gltf.scene;
+         tile.scale.set(1, 1, 1); // Scale the tile to fit the ground if necessary
 
-    //     const tileSize = 1; // Adjust based on your GLB model's size
-    //     const tilesPerRow = Math.ceil(width / tileSize);
-    //     const tilesPerColumn = Math.ceil(width / tileSize);
+        const tileSize = 1; // Adjust based on your GLB model's size
+         const tilesPerRow = Math.ceil(width / tileSize);
+         const tilesPerColumn = Math.ceil(width / tileSize);
 
-    //     // Duplicate and position the tiles in a grid to cover the ground
-    //     for (let i = 0; i < tilesPerRow; i++) {
-    //       for (let j = 0; j < tilesPerColumn; j++) {
-    //         const tileClone = tile.clone(); // Clone the tile for each position
-    //         tileClone.position.set(
-    //           i * tileSize - width / 2 + tileSize / 2,
-    //           0,
-    //           j * tileSize - width / 2 + tileSize / 2,
-    //         );
-    //         this.scene.add(tileClone);
-    //       }
-    //     }
-    //   },
-    //   undefined,
-    //   function (error) {
-    //     console.error("An error occurred while loading the GLB model:", error);
-    //   },
-    // );
+         // Duplicate and position the tiles in a grid to cover the ground
+         for (let i = 0; i < tilesPerRow; i++) {
+           for (let j = 0; j < tilesPerColumn; j++) {
+             const tileClone = tile.clone(); // Clone the tile for each position
+           tileClone.position.set(
+               i * tileSize - width / 2 + tileSize / 2,
+               0,
+               j * tileSize - width / 2 + tileSize / 2,
+             );
+             this.scene.add(tileClone);
+           }
+         }
+       },
+       undefined,
+       function (error) {
+         console.error("An error occurred while loading the GLB model:", error);
+       },
+     );*/
   }
+  adjustSceneLighting() {
+    // Reduce the intensity of the ambient light
+    this.ambient.intensity = 0.5;
 
+    // Adjust the directional light
+    this.directionalLight.intensity = 0.3;
+    this.directionalLight.position.set(50, 200, 100); // Adjust the angle
+
+    // Optional: Add a soft shadow map to the directional light
+    this.directionalLight.castShadow = true;
+    this.directionalLight.shadow.mapSize.width = 1024;
+    this.directionalLight.shadow.mapSize.height = 1024;
+    this.directionalLight.shadow.camera.near = 10;
+    this.directionalLight.shadow.camera.far = 400;
+    this.directionalLight.shadow.camera.top = 200;
+    this.directionalLight.shadow.camera.bottom = -200;
+    this.directionalLight.shadow.camera.left = -200;
+    this.directionalLight.shadow.camera.right = 200;
+
+    // Enable shadow rendering
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    // Make the ground receive shadows
+    this.groundMesh.receiveShadow = true;
+  }
   getTerrainHeight(x, z) {
     if (!this.groundMesh) return 0;
 
