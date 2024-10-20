@@ -124,7 +124,7 @@ class Scene {
     this.generateTerrain();
     this.positionCameraAboveTerrain();
     this.loadPlayer();
-    this.addWall();
+    //this.addWall();
     //this.loadBuildings();
     this.loadTower();
     //this.loadpath();
@@ -246,7 +246,7 @@ class Scene {
     // const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
     // this.scene.add(skybox);
     const rgbeLoader = new RGBELoader();
-    rgbeLoader.load('/clarens_midday_4k.hdr', (hdrTexture) => {
+    rgbeLoader.load('/overcast_soil_2_4k.hdr', (hdrTexture) => {
       hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
       this.scene.environment = hdrTexture;
       this.scene.environment.intensity = 0.05;
@@ -274,8 +274,20 @@ class Scene {
     }
 
     geometry.computeVertexNormals();
+    // Load the grass texture
+const textureLoader = new THREE.TextureLoader();
+const grassTexture = textureLoader.load('/raked_dirt_diff_4k.jpg'); // Path to your texture image
 
-    const material = new THREE.MeshStandardMaterial();
+// Optionally, adjust texture properties to repeat it
+grassTexture.wrapS = THREE.RepeatWrapping;
+grassTexture.wrapT = THREE.RepeatWrapping;
+grassTexture.repeat.set(10, 10); // Repeat the texture 10 times across the plane
+
+// Apply the texture to a material
+const material = new THREE.MeshStandardMaterial({
+    map: grassTexture, // Use the texture as the map for the material
+});
+    //const material = new THREE.MeshStandardMaterial();
 
     this.groundMesh = new THREE.Mesh(geometry, material);
     this.groundMesh.rotation.x = -Math.PI / 2;
