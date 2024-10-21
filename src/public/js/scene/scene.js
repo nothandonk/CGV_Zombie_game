@@ -3,6 +3,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.m
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
 import { GLTFObject } from "./object/object.js";
 import { RGBELoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/RGBELoader.js";
+import { ShootingMechanism } from "./shooting.js";
 
 class Scene {
   constructor() {
@@ -45,7 +46,7 @@ class Scene {
     this.camera.position.set(0, 0, 0);
     this.camera.lookAt(0, 0, 0);
     this.camera.logarithmicDepthBuffer = true; // Enable logarithmic depth buffer
-    this.scene.add(this.camera) // camera will have children, so this is necessary
+    this.scene.add(this.camera); // camera will have children, so this is necessary
     this.objects = [];
 
     // Set up renderer1
@@ -97,6 +98,8 @@ class Scene {
 
     this.objectsToCheck = [];
     this.playerBoundingBox = new THREE.Box3();
+
+    this.shooter = new ShootingMechanism(this.camera, this.scene);
   }
 
   onMouseMove(event) {
@@ -663,13 +666,6 @@ class Scene {
     }
   }
 
-  shootingListener() {
-    if (this.keysPressed[" "]) {
-      const sm = new ShootingMechanism();
-      sm.shoot();
-    }
-  }
-
   loadMutableObjects() {
     this.objects.forEach((obj) => {
       if (obj.mutable) {
@@ -691,7 +687,7 @@ class Scene {
     this.updatePlayerMovement();
     //render objects
     this.loadMutableObjects();
-    this.shootingListener();
+    // this.shootingListener();
     this.renderer.render(this.scene, this.camera);
 
     //draw minimap
