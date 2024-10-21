@@ -155,11 +155,16 @@ class Scene {
     this.loadGarage();
     this.loadBodybag();
     this.loadShakaZulu();
+    this.loadHospital();
     //this.loadBuild();
     //this.loadpath();
     this.loadcar();
+<<<<<<< HEAD
    // this.loadAmbulance();
    this.loadHospital();
+=======
+    //this.loadAmbulance();
+>>>>>>> aa79e5e (hospital)
     this.animate();
   }
 
