@@ -147,7 +147,7 @@ class Scene {
     this.positionCameraAboveTerrain();
     this.loadImmutableObjects();
 
-    this.loadPlayer();
+    // this.loadPlayer();
     this.addWall();
     this.loadBuildings();
     this.loadTower();
@@ -245,15 +245,24 @@ class Scene {
   loadPlayer() {
     // Load the 3D Gun Model using GLTFLoader
     const gltfLoader = new GLTFLoader();
-    const gun = gltfLoader.load(
-      "/rovelver1.0.0.glb",
-      (gltf) => {
-        const gunModel = gltf.scene;
-        gunModel.scale.set(0.5, 0.5, 0.5); // Adjust scale if needed
-        gunModel.position.set(0, 5, 0); // Position the gun in the center
-        gunModel;
-        this.scene.add(gunModel);
-      },
+    // const gun = gltfLoader.load(
+    //   "/rovelver1.0.0.glb",
+    //   (gltf) => {
+    //     const gunModel = gltf.scene;
+    //     gunModel.scale.set(0.5, 0.5, 0.5); // Adjust scale if needed
+    //     gunModel.position.set(0, 5, 0); // Position the gun in the center
+    //     gunModel;
+    //     this.scene.add(gunModel);
+    //   },
+      const gun = gltfLoader.load(
+        "/remington1100.glb",
+        (gltf) => {
+          const gunModel = gltf.scene;
+          gunModel.scale.set(5, 5, 5); // Adjust scale if needed
+          gunModel.position.set(0, 5, 0); // Position the gun in the center
+          gunModel;
+          this.scene.add(gunModel);
+        },
       function (xhr) {
         console.log((xhr.loaded / xhr.total) * 100 + "% loaded"); // Loading progress
       },
