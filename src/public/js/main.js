@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   const gun = new GLTFObject(
     "/remington1100.glb",
-    [3, -3.2, -10],
+    [3, -3.2, -11],
     [0, Math.PI/2, 0],
     [5, 5, 5],
     world,
