@@ -3,6 +3,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.m
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
 import { GLTFObject } from "./object/object.js";
 import { RGBELoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/RGBELoader.js";
+import Zombie from "./object/zombie.js";
 import { ShootingMechanism } from "./shooting.js";
 
 
@@ -42,7 +43,7 @@ class Scene {
       45,
       this.width / this.height,
       1,
-      3000,
+      3000
     );
     this.camera.position.set(0, 0, 0);
     this.camera.lookAt(0, 0, 0);
@@ -129,11 +130,11 @@ class Scene {
 
     window.addEventListener(
       "keydown",
-      (e) => (this.keysPressed[e.key.toLowerCase()] = true),
+      (e) => (this.keysPressed[e.key.toLowerCase()] = true)
     );
     window.addEventListener(
       "keyup",
-      (e) => (this.keysPressed[e.key.toLowerCase()] = false),
+      (e) => (this.keysPressed[e.key.toLowerCase()] = false)
     );
 
     // Prevent context menu on right click
@@ -142,9 +143,22 @@ class Scene {
     // );
   }
 
+  async addZombie() {
+    const zombie = new GLTFObject('zombie1.glb'); // Path to the tree model
+    await zombie.load(); // Ensure the tree model is loaded
+    this.addObject(zombie); // Add the loaded tree to the scene
+}
+
   async init() {
     this.generateTerrain();
     this.positionCameraAboveTerrain();
+
+    /* const zombie = new GLTFObject('zombie1.glb');
+    await zombie.load();
+    this.addObject(zombie); */
+
+    this.addZombie();
+
     this.loadImmutableObjects();
 
     // this.loadPlayer();
@@ -154,6 +168,7 @@ class Scene {
     this.loadBuild();
     //this.loadpath();
     this.loadcar();
+    this.loadZombie();
     this.animate();
   }
 
@@ -208,12 +223,26 @@ class Scene {
       scene.scale.set(0.4, 0.4, 0.4); // Adjust scale if needed
       scene.position.set(-90, 0, 200); // Position thxv
       this.scene.add(scene);
-
       const boundingBox = new THREE.Box3().setFromObject(scene);
-
-      // Add the tower and its bounding box to the objects to check for collision
-      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox })
+      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
     });
+  }
+
+  loadZombie(){
+    /* const gltfLoader = new GLTFLoader();
+    let zombie;
+    gltfLoader.load("/zombie1.glb", (gltf) => {
+      zombie = gltf.scene;
+      zombie.scale.set(20, 20, 20); // Adjust scale if needed
+      zombie.position.set(0, 0, 0); // Position thxv
+      this.scene.add(zombie);
+      const boundingBox = new THREE.Box3().setFromObject(zombie);
+      this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
+    }); */
+
+    const zombie = new Zombie(this.scene, this.camera, this.objects);
+    const boundingBox = new THREE.Box3().setFromObject(zombie);
+    this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
   }
 
   loadTower() {
@@ -379,7 +408,7 @@ class Scene {
       width,
       depth,
       widthSegments,
-      depthSegments,
+      depthSegments
     );
 
     const vertices = geometry.attributes.position.array;
@@ -562,7 +591,7 @@ class Scene {
   positionCameraAboveTerrain() {
     const terrainHeight = this.getTerrainHeight(
       this.camera.position.x,
-      this.camera.position.z,
+      this.camera.position.z
     );
     this.camera.position.y = terrainHeight + this.playerHeight;
   }
@@ -622,7 +651,7 @@ class Scene {
       // Get the camera's current rotation as Euler angles
       const rotation = new THREE.Euler().setFromQuaternion(
         this.camera.quaternion,
-        "YXZ",
+        "YXZ"
       );
 
       // Yaw (rotate around the world y-axis)
@@ -644,7 +673,7 @@ class Scene {
       // Clamp the pitch to prevent over-rotation
       rotation.x = Math.max(
         -Math.PI / 2 + 0.01,
-        Math.min(Math.PI / 2 - 0.01, rotation.x),
+        Math.min(Math.PI / 2 - 0.01, rotation.x)
       );
 
       // Update the camera's quaternion from the adjusted Euler angles
@@ -654,7 +683,7 @@ class Scene {
     // Apply gravity and terrain collision
     const terrainHeight = this.getTerrainHeight(
       this.camera.position.x,
-      this.camera.position.z,
+      this.camera.position.z
     );
 
     const targetHeight = terrainHeight + this.playerHeight;

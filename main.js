@@ -20,6 +20,8 @@ function animate() {
 }
 renderer.setAnimationLoop( animate );
 
+
+
 //add scene from sketchfab
 //const loader = new GLTFLoader();
 
