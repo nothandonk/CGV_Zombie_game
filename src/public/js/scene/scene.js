@@ -2,6 +2,9 @@ import Minimap from "../hud/minimap.js";
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
 import { GLTFObject } from "./object/object.js";
+import { RGBELoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/RGBELoader.js";
+
+
 
 class Scene {
   constructor() {
@@ -15,9 +18,11 @@ class Scene {
     // Player state
     this.moveSpeed = 3;
     this.playerHeight = 30;
+    this.playerRadius = 0.5;
     this.gravity = 0.05;
     this.jumpForce = 2;
     this.verticalVelocity = 0;
+    
 
     //minimap
     this.minimap = new Minimap();
@@ -44,8 +49,11 @@ class Scene {
     document.body.appendChild(this.renderer.domElement);
 
     // Set up lights
-    this.ambientLight = new THREE.AmbientLight(0x404040);
-    this.scene.add(this.ambientLight);
+    //this.ambientLight = new THREE.AmbientLight(0x404040);
+    //this.scene.add(this.ambientLight);
+
+    this.ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+		this.scene.add(this.ambient);
 
     this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     this.directionalLight.position.set(50, 50, 50);
@@ -57,6 +65,7 @@ class Scene {
 
     // Add player axes helper
     this.playerAxesHelper = new THREE.AxesHelper(5);
+
     this.scene.add(this.playerAxesHelper);
 
     // Set up controls
@@ -80,6 +89,9 @@ class Scene {
         this.mouseControls = false; // Disable mouse controls
       }
     });
+
+    this.objectsToCheck = [];
+    this.playerBoundingBox = new THREE.Box3();
   }
 
   onMouseMove(event) {
@@ -124,8 +136,111 @@ class Scene {
     this.generateTerrain();
     this.positionCameraAboveTerrain();
     this.loadImmutableObjects();
+
+    this.loadPlayer();
+    //this.addWall();
+    //this.loadBuildings();
+    this.loadTower();
+    //this.loadpath();
+    //this.loadcar();
     this.animate();
   }
+
+  loadBuildings() {
+    const gltfLoader = new GLTFLoader();
+    let scene;
+    gltfLoader.load("/house.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(5, 5, 5); // Adjust scale if needed
+      scene.position.set(10, 10, 0.); // Position th
+      this.scene.add(scene);
+    });
+  }
+  loadpath() {
+    const gltfLoader = new GLTFLoader();
+    let scene;
+    gltfLoader.load("/way_path_blocks.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(600, 200, 20); // Adjust scale if needed
+      scene.position.set(550, 10, 0); // Position th
+      scene.rotation.x = Math.PI/2;
+      this.scene.add(scene);
+    });
+  }
+    loadcar() {
+    const gltfLoader = new GLTFLoader();
+    let scene;
+    gltfLoader.load("/old_car_wreck.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(0.4, 0.4, 0.4); // Adjust scale if needed
+      scene.position.set(-90, 0, 200); // Position thxv
+      this.scene.add(scene);
+    });
+  }
+
+  loadTower(){
+    const gltfLoader = new GLTFLoader();
+    let tower;
+    gltfLoader.load("/old_soviet_radio_tower..glb", (gltf) => {
+      tower = gltf.scene;
+      tower.scale.set(0.5, 0.5, 0.5);
+      tower.position.set(800,0, 0);
+      tower.rotation.y = Math.PI;
+      this.scene.add(tower);
+
+      const boundingBox = new THREE.Box3().setFromObject(tower);
+      
+      // Add the tower and its bounding box to the objects to check for collision
+      this.objectsToCheck.push({ object: tower, boundingBox: boundingBox });
+    });
+  }
+
+  loadPlayer() {
+    // Load the 3D Gun Model using GLTFLoader
+    const gltfLoader = new GLTFLoader();
+    const gun = gltfLoader.load(
+      "/rovelver1.0.0.glb",
+      (gltf) => {
+        const gunModel = gltf.scene;
+        gunModel.scale.set(0.5, 0.5, 0.5); // Adjust scale if needed
+        gunModel.position.set(0, 5, 0); // Position the gun in the center
+        gunModel;
+        this.scene.add(gunModel);
+      },
+      function (xhr) {
+        console.log((xhr.loaded / xhr.total) * 100 + "% loaded"); // Loading progress
+      },
+      function (error) {
+        console.error("An error happened while loading the model", error);
+      },
+    );
+  }
+
+  addWall() {
+    const wallWidth = 2000; // Width of the wall
+    const wallHeight = 100; // Height of the wall
+    const wallDepth = 1; // Depth of the wall (thickness)
+  
+    // Create wall geometry
+    const wallGeometry = new THREE.BoxGeometry(wallWidth, wallHeight, wallDepth);
+  
+    // Load the texture
+    const textureLoader = new THREE.TextureLoader();
+    const wallTexture = textureLoader.load('worn_brick_floor_diff_2k.jpg'); // Replace with the path to your texture
+  
+    // Create the material with the texture
+    const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture });
+  
+    // Create the wall mesh
+    const wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
+  
+    // Position the wall across the X-axis at y = 0
+    wallMesh.position.set(0, 0, 0); // Center it vertically at y = 0
+    wallMesh.rotation.x = Math.PI/2;
+    // Add the wall to the scene
+    this.scene.add(wallMesh);
+  }
+
 
   generateTerrain() {
     const noise = new Noise(Math.random());
@@ -135,16 +250,26 @@ class Scene {
     const depthSegments = 2000;
 
     //skybox
-    const textureLoader = new THREE.TextureLoader();
-    const skyboxGeometry = new THREE.BoxGeometry(width, depth, depth);
-    const skyboxMaterial = new THREE.MeshBasicMaterial({
-      map: textureLoader.load("http://localhost:3000/skybox/overcast.png"),
-      side: THREE.BackSide,
-      transparent: true,
+    // const textureLoader = new THREE.TextureLoader();
+    // const skyboxGeometry = new THREE.BoxGeometry(width, depth, depth);
+    // const skyboxMaterial = new THREE.MeshBasicMaterial({
+    //   map: textureLoader.load("http://localhost:3000/skybox/overcast.png"),
+    //   side: THREE.BackSide,
+    //   transparent: true,
+    // });
+
+    // const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+    // this.scene.add(skybox);
+    const rgbeLoader = new RGBELoader();
+    rgbeLoader.load('/overcast_soil_2_4k.hdr', (hdrTexture) => {
+      hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
+      this.scene.environment = hdrTexture;
+      this.scene.environment.intensity = 0.05;
+      this.scene.background = hdrTexture; // Set the HDR as the background
+
+      //this.renderer.toneMappingExposure = 0.5;
     });
 
-    const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
-    this.scene.add(skybox);
 
     const geometry = new THREE.PlaneGeometry(
       width,
@@ -164,8 +289,20 @@ class Scene {
     }
 
     geometry.computeVertexNormals();
+    // Load the grass texture
+const textureLoader = new THREE.TextureLoader();
+const grassTexture = textureLoader.load('/raked_dirt_diff_4k.jpg'); // Path to your texture image
 
-    const material = new THREE.MeshStandardMaterial({});
+// Optionally, adjust texture properties to repeat it
+grassTexture.wrapS = THREE.RepeatWrapping;
+grassTexture.wrapT = THREE.RepeatWrapping;
+grassTexture.repeat.set(10, 10); // Repeat the texture 10 times across the plane
+
+// Apply the texture to a material
+const material = new THREE.MeshStandardMaterial({
+    map: grassTexture, // Use the texture as the map for the material
+});
+    //const material = new THREE.MeshStandardMaterial();
 
     this.groundMesh = new THREE.Mesh(geometry, material);
     this.groundMesh.rotation.x = -Math.PI / 2;
@@ -324,6 +461,7 @@ class Scene {
   }
 
   updatePlayerMovement() {
+
     // Get camera's forward direction
     const forward = new THREE.Vector3(0, 0, -1);
     const right = new THREE.Vector3(1, 0, 0);
@@ -334,6 +472,7 @@ class Scene {
     right.y = 0;
     right.normalize();
 
+    const previousPosition = this.camera.position.clone();
     // Handle movement
     if (this.keysPressed["w"]) {
       const moveAmount = this.moveSpeed;
@@ -431,6 +570,22 @@ class Scene {
     // Update player axes helper
     this.playerAxesHelper.position.copy(this.camera.position);
     this.playerAxesHelper.rotation.copy(this.camera.rotation);
+
+    // Update player bounding box
+    this.playerBoundingBox.setFromCenterAndSize(
+      this.camera.position,
+      new THREE.Vector3(this.playerRadius * 2, this.playerHeight, this.playerRadius * 2)
+    );
+
+    // Check for collisions and adjust position if necessary
+    if (this.checkCollision()) {
+      // If a collision occurred, revert to the previous position
+      this.camera.position.copy(previousPosition);
+      this.playerBoundingBox.setFromCenterAndSize(
+        this.camera.position,
+        new THREE.Vector3(this.playerRadius * 2, this.playerHeight, this.playerRadius * 2)
+      );
+    }
   }
 
   loadMutableObjects() {
@@ -454,11 +609,17 @@ class Scene {
     this.updatePlayerMovement();
     //render objects
     this.loadMutableObjects();
-    this.renderer.render(this.scene, this.camera);
+  }
+  checkCollision() {
+    for (const { boundingBox } of this.objectsToCheck) {
+      if (this.playerBoundingBox.intersectsBox(boundingBox)) {
+        console.log('Collision detected!');
+        return true; // Collision detected
+      }
+    }
+    return false; // No collision
+  }
 
-    //draw minimap
-    this.minimap.draw();
-  };
 }
 
 export default Scene;
