@@ -45,6 +45,7 @@ class Scene {
     this.camera.position.set(0, 0, 0);
     this.camera.lookAt(0, 0, 0);
     this.camera.logarithmicDepthBuffer = true; // Enable logarithmic depth buffer
+    this.scene.add(this.camera) // camera will have children, so this is necessary
     this.objects = [];
 
     // Set up renderer1
