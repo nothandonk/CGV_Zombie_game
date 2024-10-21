@@ -12,7 +12,7 @@ class Scene {
     // const fogFar = 1000;  // Distance at which the fog is fully opaque
     // this.scene.fog = new THREE.Fog(fogColor, fogNear, fogFar);
 
-    const initialFogColor = 0x4b4b4b;  // A medium dark grey
+    const initialFogColor = 0x4b4b4b; // A medium dark grey
     this.scene.fog = new THREE.Fog(initialFogColor, 50, 1000);
     this.width = window.innerWidth;
     this.height = window.innerHeight;
@@ -121,6 +121,7 @@ class Scene {
   setupControls() {
     // Keyboard controls
     this.keysPressed = {};
+
     window.addEventListener(
       "keydown",
       (e) => (this.keysPressed[e.key.toLowerCase()] = true),
@@ -163,7 +164,7 @@ class Scene {
   }
   loadBuild() {
     const loader = new GLTFLoader();
-    loader.load('/old_factory_ruin.glb', (gltf) => {
+    loader.load("/old_factory_ruin.glb", (gltf) => {
       gltf.scene.traverse((child) => {
         if (child.isMesh) {
           child.castShadow = true;
@@ -288,16 +289,16 @@ class Scene {
       this.scene.environment.intensity = 0.05;
       this.scene.background = hdrTexture; // Set the HDR as the background
       //const fogColor = new THREE.Color(0xb0c4de);  // Adjust this color to match your HDR background
-      //this.scene.fog = new THREE.Fog(fogColor, 100, 1000);  
+      //this.scene.fog = new THREE.Fog(fogColor, 100, 1000);
       //this.renderer.toneMappingExposure = 0.5;
       // Define our dystopian fog color
-      const dystopianFogColor = new THREE.Color(0x4b4b4b);  // Medium dark grey
+      const dystopianFogColor = new THREE.Color(0x4b4b4b); // Medium dark grey
 
       // Optional: Slightly adjust the fog color based on the HDR
       const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
         generateMipmaps: false,
         type: THREE.HalfFloatType,
-        format: THREE.RGBAFormat
+        format: THREE.RGBAFormat,
       });
 
       const renderer = this.renderer;
@@ -310,11 +311,11 @@ class Scene {
       const hdrColor = new THREE.Color(
         Math.pow(pixelBuffer[0], 1 / 2.2),
         Math.pow(pixelBuffer[1], 1 / 2.2),
-        Math.pow(pixelBuffer[2], 1 / 2.2)
+        Math.pow(pixelBuffer[2], 1 / 2.2),
       );
 
       // Slightly blend the dystopian color with the HDR color
-      dystopianFogColor.lerp(hdrColor, 0.1);  // Only 10% influence from HDR
+      dystopianFogColor.lerp(hdrColor, 0.1); // Only 10% influence from HDR
 
       // Update fog with the dystopian color
       this.scene.fog = new THREE.Fog(dystopianFogColor, 50, 1000);
@@ -322,19 +323,19 @@ class Scene {
       // Adjust the scene's ambient light to match the dystopian atmosphere
       if (this.ambient) {
         this.ambient.groundColor.copy(dystopianFogColor);
-        this.ambient.skyColor.copy(dystopianFogColor).multiplyScalar(1.1);  // Slightly brighter sky
-        this.ambient.intensity = 0.7;  // Reduce overall ambient light intensity
+        this.ambient.skyColor.copy(dystopianFogColor).multiplyScalar(1.1); // Slightly brighter sky
+        this.ambient.intensity = 0.7; // Reduce overall ambient light intensity
       }
 
       // Adjust the directional light for a more oppressive feel
       if (this.directionalLight) {
-        this.directionalLight.intensity = 0.6;  // Reduce directional light intensity
-        this.directionalLight.color.setHex(0xcccccc);  // Slightly warm light color
+        this.directionalLight.intensity = 0.6; // Reduce directional light intensity
+        this.directionalLight.color.setHex(0xcccccc); // Slightly warm light color
       }
 
       // Adjust the environment map intensity for a more muted look
       this.scene.environment = hdrTexture;
-      this.scene.environment.intensity = 0.5; 
+      this.scene.environment.intensity = 0.5;
     });
 
     const geometry = new THREE.PlaneGeometry(
@@ -373,7 +374,7 @@ class Scene {
     this.groundMesh = new THREE.Mesh(geometry, material);
     this.groundMesh.rotation.x = -Math.PI / 2;
     this.scene.add(this.groundMesh);
-    
+
     // Load FBX model
     // const loader = new GLTFLoader();
     // loader.load(
@@ -661,6 +662,13 @@ class Scene {
     }
   }
 
+  shootingListener() {
+    if (this.keysPressed[" "]) {
+      const sm = new ShootingMechanism();
+      sm.shoot();
+    }
+  }
+
   loadMutableObjects() {
     this.objects.forEach((obj) => {
       if (obj.mutable) {
@@ -682,6 +690,7 @@ class Scene {
     this.updatePlayerMovement();
     //render objects
     this.loadMutableObjects();
+    this.shootingListener();
     this.renderer.render(this.scene, this.camera);
 
     //draw minimap
