@@ -7,6 +7,13 @@ import { RGBELoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/
 class Scene {
   constructor() {
     this.scene = new THREE.Scene();
+    // const fogColor = 0xcccccc;  // Light gray color
+    // const fogNear = 10;  // Distance at which the fog starts
+    // const fogFar = 1000;  // Distance at which the fog is fully opaque
+    // this.scene.fog = new THREE.Fog(fogColor, fogNear, fogFar);
+
+    const initialFogColor = 0x4b4b4b;  // A medium dark grey
+    this.scene.fog = new THREE.Fog(initialFogColor, 50, 1000);
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.mouseSensitivity = 0.002;
@@ -135,11 +142,12 @@ class Scene {
     this.loadImmutableObjects();
 
     this.loadPlayer();
-    //this.addWall();
+    this.addWall();
     //this.loadBuildings();
     this.loadTower();
+    //this.loadBuild();
     //this.loadpath();
-    //this.loadcar();
+    this.loadcar();
     this.animate();
   }
 
@@ -151,6 +159,19 @@ class Scene {
       scene.scale.set(5, 5, 5); // Adjust scale if needed
       scene.position.set(10, 10, 0); // Position th
       this.scene.add(scene);
+    });
+  }
+  loadBuild() {
+    const loader = new GLTFLoader();
+    loader.load('/old_factory_ruin.glb', (gltf) => {
+      gltf.scene.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+      this.scene.add(gltf.scene);
+      this.objectsToCheck.push(...gltf.scene.children);
     });
   }
   loadpath() {
@@ -266,8 +287,54 @@ class Scene {
       this.scene.environment = hdrTexture;
       this.scene.environment.intensity = 0.05;
       this.scene.background = hdrTexture; // Set the HDR as the background
-
+      //const fogColor = new THREE.Color(0xb0c4de);  // Adjust this color to match your HDR background
+      //this.scene.fog = new THREE.Fog(fogColor, 100, 1000);  
       //this.renderer.toneMappingExposure = 0.5;
+      // Define our dystopian fog color
+      const dystopianFogColor = new THREE.Color(0x4b4b4b);  // Medium dark grey
+
+      // Optional: Slightly adjust the fog color based on the HDR
+      const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
+        generateMipmaps: false,
+        type: THREE.HalfFloatType,
+        format: THREE.RGBAFormat
+      });
+
+      const renderer = this.renderer;
+      const cubeCamera = new THREE.CubeCamera(0.1, 10, renderTarget);
+      cubeCamera.update(renderer, this.scene);
+
+      const pixelBuffer = new Float32Array(4);
+      renderer.readRenderTargetPixels(renderTarget, 0, 0, 1, 1, pixelBuffer);
+
+      const hdrColor = new THREE.Color(
+        Math.pow(pixelBuffer[0], 1 / 2.2),
+        Math.pow(pixelBuffer[1], 1 / 2.2),
+        Math.pow(pixelBuffer[2], 1 / 2.2)
+      );
+
+      // Slightly blend the dystopian color with the HDR color
+      dystopianFogColor.lerp(hdrColor, 0.1);  // Only 10% influence from HDR
+
+      // Update fog with the dystopian color
+      this.scene.fog = new THREE.Fog(dystopianFogColor, 50, 1000);
+
+      // Adjust the scene's ambient light to match the dystopian atmosphere
+      if (this.ambient) {
+        this.ambient.groundColor.copy(dystopianFogColor);
+        this.ambient.skyColor.copy(dystopianFogColor).multiplyScalar(1.1);  // Slightly brighter sky
+        this.ambient.intensity = 0.7;  // Reduce overall ambient light intensity
+      }
+
+      // Adjust the directional light for a more oppressive feel
+      if (this.directionalLight) {
+        this.directionalLight.intensity = 0.6;  // Reduce directional light intensity
+        this.directionalLight.color.setHex(0xcccccc);  // Slightly warm light color
+      }
+
+      // Adjust the environment map intensity for a more muted look
+      this.scene.environment = hdrTexture;
+      this.scene.environment.intensity = 0.5; 
     });
 
     const geometry = new THREE.PlaneGeometry(
@@ -306,7 +373,7 @@ class Scene {
     this.groundMesh = new THREE.Mesh(geometry, material);
     this.groundMesh.rotation.x = -Math.PI / 2;
     this.scene.add(this.groundMesh);
-
+    
     // Load FBX model
     // const loader = new GLTFLoader();
     // loader.load(
