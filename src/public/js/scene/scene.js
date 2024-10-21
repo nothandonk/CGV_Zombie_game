@@ -3,11 +3,8 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.m
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
 import { GLTFObject } from "./object/object.js";
 import { RGBELoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/RGBELoader.js";
-<<<<<<< HEAD
 import { ShootingMechanism } from "./shooting.js";
-=======
-//import { roughness } from "three/webgpu";
->>>>>>> 203f8b2 (new floor)
+
 
 class Scene {
   constructor() {
@@ -206,23 +203,6 @@ class Scene {
   loadcar() {
     const gltfLoader = new GLTFLoader();
     let scene;
-<<<<<<< HEAD
-    let car = new GLTFObject(
-      "/old_car_wreck.glb",
-      [-90, 0, 200],
-      [0, 0, 0],
-      [0.4, 0.4, 0.4],
-      this,
-      false,
-      false,
-    );
-    // gltfLoader.load("/old_car_wreck.glb", (gltf) => {
-    //   scene = gltf.scene;
-    //   scene.scale.set(0.4, 0.4, 0.4); // Adjust scale if needed
-    //   scene.position.set(-90, 0, 200); // Position thxv
-    //   this.scene.add(scene);
-    // });
-=======
     gltfLoader.load("/old_car_wreck.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(0.4, 0.4, 0.4); // Adjust scale if needed
@@ -234,7 +214,6 @@ class Scene {
       // Add the tower and its bounding box to the objects to check for collision
       this.objectsToCheck.push({ object: scene, boundingBox: boundingBox })
     });
->>>>>>> 203f8b2 (new floor)
   }
 
   loadTower() {
