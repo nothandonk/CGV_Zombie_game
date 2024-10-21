@@ -146,14 +146,19 @@ class Scene {
     this.generateTerrain();
     this.positionCameraAboveTerrain();
     this.loadImmutableObjects();
-
+    this.loadHospital();
     this.loadPlayer();
-    this.addWall();
+ //   this.addWall();
     this.loadBuildings();
+    this.loadGravestones();
     this.loadTower();
-    this.loadBuild();
+    this.loadGarage();
+    this.loadBodybag();
+    this.loadShakaZulu();
+    //this.loadBuild();
     //this.loadpath();
     this.loadcar();
+    this.loadAmbulance();
     this.animate();
   }
 
@@ -227,21 +232,91 @@ class Scene {
       false,
       false,
     );
-
-    // gltfLoader.load("/old_soviet_radio_tower..glb", (gltf) => {
-    //   tower = gltf.scene;
-    //   tower.scale.set(0.5, 0.5, 0.5);
-    //   tower.position.set(800, 0, 0);
-    //   tower.rotation.y = Math.PI;
-    //   this.scene.add(tower);
-
-    //   const boundingBox = new THREE.Box3().setFromObject(tower);
-
-    //   // Add the tower and its bounding box to the objects to check for collision
-    //   this.objectsToCheck.push({ object: tower, boundingBox: boundingBox });
-    // });
+  }
+ 
+  loadAmbulance() {
+    const gltfLoader = new GLTFLoader();
+    let ambulance = new GLTFObject(
+      "/ambulance.glb",
+      [0, 0, 0],
+      [0, 0, 0],
+      [10, 10, 10],
+      this,
+      false,
+      false,
+    );
   }
 
+  loadShakaZulu() {
+    const gltfLoader = new GLTFLoader();
+    let scene;
+    gltfLoader.load("/zulu.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(70, 100, 100); // Adjust scale if needed
+      scene.position.set(0, 0, 0); // Position th
+      scene.rotation.y = Math.PI/2;
+      this.scene.add(scene);
+
+      //const boundingBox = new THREE.Box3().setFromObject(scene);
+
+      // Add the tower and its bounding box to the objects to check for collision
+      //this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
+    });
+  }
+
+  loadBodybag() {
+    const gltfLoader = new GLTFLoader();
+    let bodybag = new GLTFObject(
+      "/old_soviet_radio_tower.glb",
+      [800, 0, 0],
+      [0, Math.PI, 0],
+      [0.5, 0.5, 0.5],
+      this,
+      false,
+      false,
+    );
+  }
+  loadGarage() {
+    const gltfLoader = new GLTFLoader();
+    let bodybag = new GLTFObject(
+      "/gas_station.glb",
+      [-800, 0, -800],
+      [0, Math.PI, 0],
+      [15, 15, 15],
+      this,
+      false,
+      false,
+    );
+  }
+
+  loadHospital() {
+    const gltfLoader = new GLTFLoader();
+    let hospital = new GLTFObject(
+      "/zombie_hospital.glb",
+      [500, 0, -800],
+      [0, 0, 0],
+      [15, 15, 15],
+      this,
+      false,
+      false,
+    );
+  }
+
+  loadGravestones() {
+    const gltfLoader = new GLTFLoader();
+    let scene;
+    gltfLoader.load("/gravestones.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(10, 10, 10); // Adjust scale if needed
+      scene.position.set(0, 0, -280); // Position th
+      this.scene.add(scene);
+
+      const boundingBox = new THREE.Box3().setFromObject(scene);
+
+      // Add the tower and its bounding box to the objects to check for collision
+      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
+    });
+  }
   loadPlayer() {
     // Load the 3D Gun Model using GLTFLoader
     const gltfLoader = new GLTFLoader();
@@ -278,7 +353,9 @@ class Scene {
     // Load the texture
     const textureLoader = new THREE.TextureLoader();
     const wallTexture = textureLoader.load("worn_brick_floor_diff_2k.jpg"); // Replace with the path to your texture
-
+    wallTexture.wrapS = THREE.RepeatWrapping;
+    wallTexture.wrapT = THREE.RepeatWrapping;
+    wallTexture.repeat.set(5,5);
     // Create the material with the texture
     const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture });
 
@@ -287,7 +364,7 @@ class Scene {
 
     // Position the wall across the X-axis at y = 0
     wallMesh.position.set(0, 0, 0); // Center it vertically at y = 0
-    wallMesh.rotation.x = Math.PI / 2;
+    //wallMesh.rotation.x = Math.PI / 2;
     // Add the wall to the scene
     this.scene.add(wallMesh);
   }
