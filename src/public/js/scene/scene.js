@@ -3,7 +3,11 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.m
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
 import { GLTFObject } from "./object/object.js";
 import { RGBELoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/RGBELoader.js";
+<<<<<<< HEAD
 import { ShootingMechanism } from "./shooting.js";
+=======
+//import { roughness } from "three/webgpu";
+>>>>>>> 203f8b2 (new floor)
 
 class Scene {
   constructor() {
@@ -148,9 +152,9 @@ class Scene {
 
     this.loadPlayer();
     this.addWall();
-    //this.loadBuildings();
+    this.loadBuildings();
     this.loadTower();
-    //this.loadBuild();
+    this.loadBuild();
     //this.loadpath();
     this.loadcar();
     this.animate();
@@ -161,22 +165,31 @@ class Scene {
     let scene;
     gltfLoader.load("/house.glb", (gltf) => {
       scene = gltf.scene;
-      scene.scale.set(5, 5, 5); // Adjust scale if needed
-      scene.position.set(10, 10, 0); // Position th
+      scene.scale.set(20, 20, 20); // Adjust scale if needed
+      scene.position.set(-250, 0, 800); // Position th
       this.scene.add(scene);
+
+      const boundingBox = new THREE.Box3().setFromObject(scene);
+
+      // Add the tower and its bounding box to the objects to check for collision
+      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
     });
   }
   loadBuild() {
     const loader = new GLTFLoader();
+    let fact;
     loader.load("/old_factory_ruin.glb", (gltf) => {
-      gltf.scene.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-      });
-      this.scene.add(gltf.scene);
-      this.objectsToCheck.push(...gltf.scene.children);
+      fact = gltf.scene;
+      fact.scale.set(10, 10,10);
+      fact.position.set(-600, -55, -100);
+      fact.rotation.y = Math.PI/2;
+      this.scene.add(fact);
+
+      const boundingBox = new THREE.Box3().setFromObject(fact);
+
+      // Add the tower and its bounding box to the objects to check for collision
+      this.objectsToCheck.push({ object: fact, boundingBox: boundingBox });
+      
     });
   }
   loadpath() {
@@ -184,8 +197,8 @@ class Scene {
     let scene;
     gltfLoader.load("/way_path_blocks.glb", (gltf) => {
       scene = gltf.scene;
-      scene.scale.set(600, 200, 20); // Adjust scale if needed
-      scene.position.set(550, 10, 0); // Position th
+      scene.scale.set(600, 200, 0); // Adjust scale if needed
+      scene.position.set(550, -100, 0); // Position th
       scene.rotation.x = Math.PI / 2;
       this.scene.add(scene);
     });
@@ -193,6 +206,7 @@ class Scene {
   loadcar() {
     const gltfLoader = new GLTFLoader();
     let scene;
+<<<<<<< HEAD
     let car = new GLTFObject(
       "/old_car_wreck.glb",
       [-90, 0, 200],
@@ -208,6 +222,19 @@ class Scene {
     //   scene.position.set(-90, 0, 200); // Position thxv
     //   this.scene.add(scene);
     // });
+=======
+    gltfLoader.load("/old_car_wreck.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(0.4, 0.4, 0.4); // Adjust scale if needed
+      scene.position.set(-90, 0, 200); // Position thxv
+      this.scene.add(scene);
+
+      const boundingBox = new THREE.Box3().setFromObject(scene);
+
+      // Add the tower and its bounding box to the objects to check for collision
+      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox })
+    });
+>>>>>>> 203f8b2 (new floor)
   }
 
   loadTower() {
@@ -380,16 +407,19 @@ class Scene {
     geometry.computeVertexNormals();
     // Load the grass texture
     const textureLoader = new THREE.TextureLoader();
-    const grassTexture = textureLoader.load("/raked_dirt_diff_4k.jpg"); // Path to your texture image
+    const grassTexture = textureLoader.load("/thesoil.jpg"); // Path to your texture image
 
     // Optionally, adjust texture properties to repeat it
     grassTexture.wrapS = THREE.RepeatWrapping;
     grassTexture.wrapT = THREE.RepeatWrapping;
-    grassTexture.repeat.set(10, 10); // Repeat the texture 10 times across the plane
+    grassTexture.repeat.set(50, 50); // Repeat the texture 10 times across the plane
 
     // Apply the texture to a material
     const material = new THREE.MeshStandardMaterial({
       map: grassTexture, // Use the texture as the map for the material
+      // roughness:0.8,
+      color: 0x666666,
+
     });
     //const material = new THREE.MeshStandardMaterial();
 
