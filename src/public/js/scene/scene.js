@@ -240,7 +240,7 @@ class Scene {
       this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
     }); */
 
-    const zombie = new Zombie(this.scene, this.camera, this.objects);
+    const zombie = new Zombie(this.scene, this.camera, this.objects, this.shooter);
     const boundingBox = new THREE.Box3().setFromObject(zombie);
     this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
   }
