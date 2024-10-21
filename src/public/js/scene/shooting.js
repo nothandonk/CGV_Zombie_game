@@ -21,7 +21,7 @@ export class ShootingMechanism {
 
     // Animation properties
     this.bulletSpeed = 1; // Units per frame
-    this.bulletSize = 0.1; // Size of the bullet block
+    this.bulletSize = 0.5; // Size of the bullet block
 
     // Bind methods
     this.shoot = this.shoot.bind(this);

@@ -1,5 +1,6 @@
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
 import { nanoid } from "https://cdn.jsdelivr.net/npm/nanoid/nanoid.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
 
 export class GLTFObject {
   constructor(
@@ -23,16 +24,22 @@ export class GLTFObject {
     this.followCamera = followCamera;
     this.loader.load(this.path, (gltf) => {
       let _ = gltf.scene;
+      _.position.set(this.position[0], this.position[1], this.position[2]);
+      _.rotation.set(this.rotation[0], this.rotation[1], this.rotation[2]);
       _.scale.set(this.scale[0], this.scale[1], this.scale[2]);
       if (this.followCamera) {
         this.world.camera.add(_);
       } else {
-        this.world.addObject(this);
+        this.world.scene.add(_);
+        const boundingBox = new THREE.Box3().setFromObject(_);
+        this.world.objectsToCheck.push({
+          object: _,
+          boundingBox: boundingBox,
+        });
       }
       this.scene = _;
-      _.position.set(this.position[0], this.position[1], this.position[2]);
-      _.rotation.set(this.rotation[0], this.rotation[1], this.rotation[2]);
     });
+
     this.mutable = mutable;
     this.rerender = false;
   }
@@ -62,14 +69,6 @@ export class GLTFObject {
       //   this.world.camera.rotation.y - Math.PI / 2,
       //   this.world.camera.rotation.z,
       // );
-    } else {
-      this.scene.position.set(
-        this.position[0],
-        this.position[1],
-        this.position[2],
-      );
     }
-
-    this.scene.scale.set(this.scale[0], this.scale[1], this.scale[2]);
   }
 }

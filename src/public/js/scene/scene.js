@@ -193,29 +193,47 @@ class Scene {
   loadcar() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/old_car_wreck.glb", (gltf) => {
-      scene = gltf.scene;
-      scene.scale.set(0.4, 0.4, 0.4); // Adjust scale if needed
-      scene.position.set(-90, 0, 200); // Position thxv
-      this.scene.add(scene);
-    });
+    let car = new GLTFObject(
+      "/old_car_wreck.glb",
+      [-90, 0, 200],
+      [0, 0, 0],
+      [0.4, 0.4, 0.4],
+      this,
+      false,
+      false,
+    );
+    // gltfLoader.load("/old_car_wreck.glb", (gltf) => {
+    //   scene = gltf.scene;
+    //   scene.scale.set(0.4, 0.4, 0.4); // Adjust scale if needed
+    //   scene.position.set(-90, 0, 200); // Position thxv
+    //   this.scene.add(scene);
+    // });
   }
 
   loadTower() {
     const gltfLoader = new GLTFLoader();
-    let tower;
-    gltfLoader.load("/old_soviet_radio_tower..glb", (gltf) => {
-      tower = gltf.scene;
-      tower.scale.set(0.5, 0.5, 0.5);
-      tower.position.set(800, 0, 0);
-      tower.rotation.y = Math.PI;
-      this.scene.add(tower);
+    let tower = new GLTFObject(
+      "/old_soviet_radio_tower.glb",
+      [800, 0, 0],
+      [0, Math.PI, 0],
+      [0.5, 0.5, 0.5],
+      this,
+      false,
+      false,
+    );
 
-      const boundingBox = new THREE.Box3().setFromObject(tower);
+    // gltfLoader.load("/old_soviet_radio_tower..glb", (gltf) => {
+    //   tower = gltf.scene;
+    //   tower.scale.set(0.5, 0.5, 0.5);
+    //   tower.position.set(800, 0, 0);
+    //   tower.rotation.y = Math.PI;
+    //   this.scene.add(tower);
 
-      // Add the tower and its bounding box to the objects to check for collision
-      this.objectsToCheck.push({ object: tower, boundingBox: boundingBox });
-    });
+    //   const boundingBox = new THREE.Box3().setFromObject(tower);
+
+    //   // Add the tower and its bounding box to the objects to check for collision
+    //   this.objectsToCheck.push({ object: tower, boundingBox: boundingBox });
+    // });
   }
 
   loadPlayer() {
