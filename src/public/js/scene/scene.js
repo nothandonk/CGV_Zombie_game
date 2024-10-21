@@ -158,7 +158,8 @@ class Scene {
     //this.loadBuild();
     //this.loadpath();
     this.loadcar();
-    this.loadAmbulance();
+   // this.loadAmbulance();
+   this.loadHospital();
     this.animate();
   }
 
