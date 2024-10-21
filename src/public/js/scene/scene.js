@@ -6,7 +6,6 @@ import { RGBELoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/
 import Zombie from "./object/zombie.js";
 import { ShootingMechanism } from "./shooting.js";
 
-
 class Scene {
   constructor() {
     this.scene = new THREE.Scene();
@@ -43,7 +42,7 @@ class Scene {
       45,
       this.width / this.height,
       1,
-      3000
+      3000,
     );
     this.camera.position.set(0, 0, 0);
     this.camera.lookAt(0, 0, 0);
@@ -130,11 +129,11 @@ class Scene {
 
     window.addEventListener(
       "keydown",
-      (e) => (this.keysPressed[e.key.toLowerCase()] = true)
+      (e) => (this.keysPressed[e.key.toLowerCase()] = true),
     );
     window.addEventListener(
       "keyup",
-      (e) => (this.keysPressed[e.key.toLowerCase()] = false)
+      (e) => (this.keysPressed[e.key.toLowerCase()] = false),
     );
 
     // Prevent context menu on right click
@@ -144,10 +143,10 @@ class Scene {
   }
 
   async addZombie() {
-    const zombie = new GLTFObject('zombie1.glb'); // Path to the tree model
-    await zombie.load(); // Ensure the tree model is loaded
-    this.addObject(zombie); // Add the loaded tree to the scene
-}
+    const zombie = new GLTFObject("zombie1.glb"); // Path to the tree model
+    // await zombie.load(); // Ensure the tree model is loaded
+    // this.addObject(zombie); // Add the loaded tree to the scene
+  }
 
   async init() {
     this.generateTerrain();
@@ -157,7 +156,7 @@ class Scene {
     await zombie.load();
     this.addObject(zombie); */
 
-    this.addZombie();
+    // this.addZombie();
 
     this.loadImmutableObjects();
 
@@ -192,16 +191,15 @@ class Scene {
     let fact;
     loader.load("/old_factory_ruin.glb", (gltf) => {
       fact = gltf.scene;
-      fact.scale.set(10, 10,10);
+      fact.scale.set(10, 10, 10);
       fact.position.set(-600, -55, -100);
-      fact.rotation.y = Math.PI/2;
+      fact.rotation.y = Math.PI / 2;
       this.scene.add(fact);
 
       const boundingBox = new THREE.Box3().setFromObject(fact);
 
       // Add the tower and its bounding box to the objects to check for collision
       this.objectsToCheck.push({ object: fact, boundingBox: boundingBox });
-      
     });
   }
   loadpath() {
@@ -228,7 +226,7 @@ class Scene {
     });
   }
 
-  loadZombie(){
+  loadZombie() {
     /* const gltfLoader = new GLTFLoader();
     let zombie;
     gltfLoader.load("/zombie1.glb", (gltf) => {
@@ -240,9 +238,12 @@ class Scene {
       this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
     }); */
 
-    const zombie = new Zombie(this.scene, this.camera, this.objects);
-    const boundingBox = new THREE.Box3().setFromObject(zombie);
-    this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
+    const zombie = new Zombie(
+      this.scene,
+      this.camera,
+      this.objectsToCheck,
+      this,
+    );
   }
 
   loadTower() {
@@ -283,15 +284,15 @@ class Scene {
     //     gunModel;
     //     this.scene.add(gunModel);
     //   },
-      const gun = gltfLoader.load(
-        "/remington1100.glb",
-        (gltf) => {
-          const gunModel = gltf.scene;
-          gunModel.scale.set(5, 5, 5); // Adjust scale if needed
-          gunModel.position.set(0, 5, 0); // Position the gun in the center
-          gunModel;
-          this.scene.add(gunModel);
-        },
+    const gun = gltfLoader.load(
+      "/remington1100.glb",
+      (gltf) => {
+        const gunModel = gltf.scene;
+        gunModel.scale.set(5, 5, 5); // Adjust scale if needed
+        gunModel.position.set(0, 5, 0); // Position the gun in the center
+        gunModel;
+        this.scene.add(gunModel);
+      },
       function (xhr) {
         console.log((xhr.loaded / xhr.total) * 100 + "% loaded"); // Loading progress
       },
@@ -408,7 +409,7 @@ class Scene {
       width,
       depth,
       widthSegments,
-      depthSegments
+      depthSegments,
     );
 
     const vertices = geometry.attributes.position.array;
@@ -436,7 +437,6 @@ class Scene {
       map: grassTexture, // Use the texture as the map for the material
       // roughness:0.8,
       color: 0x666666,
-
     });
     //const material = new THREE.MeshStandardMaterial();
 
@@ -591,7 +591,7 @@ class Scene {
   positionCameraAboveTerrain() {
     const terrainHeight = this.getTerrainHeight(
       this.camera.position.x,
-      this.camera.position.z
+      this.camera.position.z,
     );
     this.camera.position.y = terrainHeight + this.playerHeight;
   }
@@ -651,7 +651,7 @@ class Scene {
       // Get the camera's current rotation as Euler angles
       const rotation = new THREE.Euler().setFromQuaternion(
         this.camera.quaternion,
-        "YXZ"
+        "YXZ",
       );
 
       // Yaw (rotate around the world y-axis)
@@ -673,7 +673,7 @@ class Scene {
       // Clamp the pitch to prevent over-rotation
       rotation.x = Math.max(
         -Math.PI / 2 + 0.01,
-        Math.min(Math.PI / 2 - 0.01, rotation.x)
+        Math.min(Math.PI / 2 - 0.01, rotation.x),
       );
 
       // Update the camera's quaternion from the adjusted Euler angles
@@ -683,7 +683,7 @@ class Scene {
     // Apply gravity and terrain collision
     const terrainHeight = this.getTerrainHeight(
       this.camera.position.x,
-      this.camera.position.z
+      this.camera.position.z,
     );
 
     const targetHeight = terrainHeight + this.playerHeight;
