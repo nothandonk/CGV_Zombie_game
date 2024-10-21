@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
     true,
   );
 
-  gun.setRotation([0, Math.PI / 2, 0]);
+  // gun.setRotation([0, Math.PI / 2, 0]);
 
   world.animate();
 });
