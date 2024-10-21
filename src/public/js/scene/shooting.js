@@ -20,8 +20,8 @@ export class ShootingMechanism {
     this.shootingCooldown = 250; // milliseconds
 
     // Animation properties
-    this.bulletSpeed = 1; // Units per frame
-    this.bulletSize = 0.5; // Size of the bullet block
+    this.bulletSpeed = 120; // Units per frame
+    this.bulletSize = 0.3; // Size of the bullet block
 
     // Bind methods
     this.shoot = this.shoot.bind(this);
@@ -62,10 +62,10 @@ export class ShootingMechanism {
       return line;
     };
 
-    const leftLine = createLine(-length / 2 - gap / 2, 0, length, thickness);
-    const rightLine = createLine(length / 2 + gap / 2, 0, length, thickness);
-    const topLine = createLine(0, length / 2 + gap / 2, thickness, length);
-    const bottomLine = createLine(0, -length / 2 - gap / 2, thickness, length);
+    const leftLine = createLine((-length / 2 - gap / 2)+0.0275, -0.03, length, thickness);
+    const rightLine = createLine((length / 2 + gap / 2)+0.0275, -0.03, length, thickness);
+    const topLine = createLine(0.0275, (length / 2 + gap / 2)-0.03, thickness, length);
+    const bottomLine = createLine(0.0275, (-length / 2 - gap / 2)-0.03, thickness, length);
 
     crosshairGroup.add(leftLine);
     crosshairGroup.add(rightLine);
@@ -73,6 +73,8 @@ export class ShootingMechanism {
     crosshairGroup.add(bottomLine);
 
     crosshairGroup.position.z = -1;
+
+
 
     return crosshairGroup;
   }
