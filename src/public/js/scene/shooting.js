@@ -62,10 +62,30 @@ export class ShootingMechanism {
       return line;
     };
 
-    const leftLine = createLine((-length / 2 - gap / 2)+0.0275, -0.03, length, thickness);
-    const rightLine = createLine((length / 2 + gap / 2)+0.0275, -0.03, length, thickness);
-    const topLine = createLine(0.0275, (length / 2 + gap / 2)-0.03, thickness, length);
-    const bottomLine = createLine(0.0275, (-length / 2 - gap / 2)-0.03, thickness, length);
+    const leftLine = createLine(
+      -length / 2 - gap / 2 + 0.0275,
+      -0.03,
+      length,
+      thickness,
+    );
+    const rightLine = createLine(
+      length / 2 + gap / 2 + 0.0275,
+      -0.03,
+      length,
+      thickness,
+    );
+    const topLine = createLine(
+      0.0275,
+      length / 2 + gap / 2 - 0.03,
+      thickness,
+      length,
+    );
+    const bottomLine = createLine(
+      0.0275,
+      -length / 2 - gap / 2 - 0.03,
+      thickness,
+      length,
+    );
 
     crosshairGroup.add(leftLine);
     crosshairGroup.add(rightLine);
@@ -73,8 +93,6 @@ export class ShootingMechanism {
     crosshairGroup.add(bottomLine);
 
     crosshairGroup.position.z = -1;
-
-
 
     return crosshairGroup;
   }
@@ -222,7 +240,9 @@ export class ShootingMechanism {
       target.material.copy(originalMaterial);
     }, 100);
 
-    const hitEvent = new CustomEvent("targetHit", { detail: { target } });
+    const hitEvent = new CustomEvent("targetHit", {
+      detail: { target },
+    });
     document.dispatchEvent(hitEvent);
   }
 

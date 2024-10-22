@@ -3,8 +3,8 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.m
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
 import { GLTFObject } from "./object/object.js";
 import { RGBELoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/RGBELoader.js";
+import Zombie from "./object/zombie.js";
 import { ShootingMechanism } from "./shooting.js";
-
 
 class Scene {
   constructor() {
@@ -142,9 +142,22 @@ class Scene {
     // );
   }
 
+  async addZombie() {
+    const zombie = new GLTFObject("zombie1.glb"); // Path to the tree model
+    // await zombie.load(); // Ensure the tree model is loaded
+    // this.addObject(zombie); // Add the loaded tree to the scene
+  }
+
   async init() {
     this.generateTerrain();
     this.positionCameraAboveTerrain();
+
+    /* const zombie = new GLTFObject('zombie1.glb');
+    await zombie.load();
+    this.addObject(zombie); */
+
+    // this.addZombie();
+
     this.loadImmutableObjects();
 
     // this.loadPlayer();
@@ -162,6 +175,7 @@ class Scene {
    // this.loadAmbulance();
    this.loadHospital();
     //this.loadAmbulance();
+    this.loadZombie();
     this.animate();
   }
 
@@ -185,16 +199,15 @@ class Scene {
     let fact;
     loader.load("/old_factory_ruin.glb", (gltf) => {
       fact = gltf.scene;
-      fact.scale.set(10, 10,10);
+      fact.scale.set(10, 10, 10);
       fact.position.set(-600, -55, -100);
-      fact.rotation.y = Math.PI/2;
+      fact.rotation.y = Math.PI / 2;
       this.scene.add(fact);
 
       const boundingBox = new THREE.Box3().setFromObject(fact);
 
       // Add the tower and its bounding box to the objects to check for collision
       this.objectsToCheck.push({ object: fact, boundingBox: boundingBox });
-      
     });
   }
   loadpath() {
@@ -216,12 +229,29 @@ class Scene {
       scene.scale.set(0.4, 0.4, 0.4); // Adjust scale if needed
       scene.position.set(-90, 0, 200); // Position thxv
       this.scene.add(scene);
-
       const boundingBox = new THREE.Box3().setFromObject(scene);
-
-      // Add the tower and its bounding box to the objects to check for collision
-      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox })
+      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
     });
+  }
+
+  loadZombie() {
+    /* const gltfLoader = new GLTFLoader();
+    let zombie;
+    gltfLoader.load("/zombie1.glb", (gltf) => {
+      zombie = gltf.scene;
+      zombie.scale.set(20, 20, 20); // Adjust scale if needed
+      zombie.position.set(0, 0, 0); // Position thxv
+      this.scene.add(zombie);
+      const boundingBox = new THREE.Box3().setFromObject(zombie);
+      this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
+    }); */
+
+    const zombie = new Zombie(
+      this.scene,
+      this.camera,
+      this.objectsToCheck,
+      this,
+    );
   }
 
   loadTower() {
@@ -332,15 +362,15 @@ class Scene {
     //     gunModel;
     //     this.scene.add(gunModel);
     //   },
-      const gun = gltfLoader.load(
-        "/remington1100.glb",
-        (gltf) => {
-          const gunModel = gltf.scene;
-          gunModel.scale.set(5, 5, 5); // Adjust scale if needed
-          gunModel.position.set(0, 5, 0); // Position the gun in the center
-          gunModel;
-          this.scene.add(gunModel);
-        },
+    const gun = gltfLoader.load(
+      "/remington1100.glb",
+      (gltf) => {
+        const gunModel = gltf.scene;
+        gunModel.scale.set(5, 5, 5); // Adjust scale if needed
+        gunModel.position.set(0, 5, 0); // Position the gun in the center
+        gunModel;
+        this.scene.add(gunModel);
+      },
       function (xhr) {
         console.log((xhr.loaded / xhr.total) * 100 + "% loaded"); // Loading progress
       },
@@ -487,7 +517,6 @@ class Scene {
       map: grassTexture, // Use the texture as the map for the material
       // roughness:0.8,
       color: 0x666666,
-
     });
     //const material = new THREE.MeshStandardMaterial();
 

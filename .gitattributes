@@ -1,0 +1,1 @@
+src/public/zombie1.glb filter=lfs diff=lfs merge=lfs -text
