@@ -56,7 +56,15 @@ class Zombie {
     window.addEventListener("click", resumeAudioContext);
     window.addEventListener("keydown", resumeAudioContext);
 
+    //listen for hit markers
+    document.addEventListener("targetHit", this.onHit);
+
     this.animate();
+  }
+
+  onHit(e) {
+    const target = e.detail.target;
+    console.log(target, this.model);
   }
 
   loadModel() {
@@ -77,7 +85,7 @@ class Zombie {
         this.model.add(this.zombieSound);
 
         //add as target
-        this.world.shooter.addTarget(this.model)
+        this.world.shooter.addTarget(this.model);
 
         // Set up animation mixer
         this.mixer = new THREE.AnimationMixer(this.model);
