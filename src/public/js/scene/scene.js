@@ -1,9 +1,9 @@
-import Minimap from "../hud/minimap.js";
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
 import { GLTFObject } from "./object/object.js";
 import { RGBELoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/RGBELoader.js";
 import Zombie from "./object/zombie.js";
+import MiniMap from "../hud/minimap.js";
 import { ShootingMechanism } from "./shooting.js";
 
 class Scene {
@@ -30,8 +30,12 @@ class Scene {
     this.jumpForce = 2;
     this.verticalVelocity = 0;
 
-    //minimap
-    this.minimap = new Minimap();
+    this.minimap = new MiniMap("minimap-container", {
+      size: 150,
+      playerColor: "#00ff00",
+      enemyColor: "#ff0000",
+      obstacleColor: "#666666",
+    });
 
     // Mouse state
     this.mouseButtons = { left: false, right: false };
@@ -173,8 +177,8 @@ class Scene {
     //this.loadBuild();
     //this.loadpath();
     this.loadcar();
-   // this.loadAmbulance();
-   this.loadHospital();
+    // this.loadAmbulance();
+    this.loadHospital();
     //this.loadAmbulance();
     this.loadZombie();
     this.animate();
@@ -267,7 +271,7 @@ class Scene {
       false,
     );
   }
- 
+
   loadAmbulance() {
     const gltfLoader = new GLTFLoader();
     let ambulance = new GLTFObject(
@@ -288,7 +292,7 @@ class Scene {
       scene = gltf.scene;
       scene.scale.set(70, 100, 100); // Adjust scale if needed
       scene.position.set(0, 0, 0); // Position th
-      scene.rotation.y = Math.PI/2;
+      scene.rotation.y = Math.PI / 2;
       this.scene.add(scene);
 
       //const boundingBox = new THREE.Box3().setFromObject(scene);
@@ -398,7 +402,7 @@ class Scene {
     const wallTexture = textureLoader.load("worn_brick_floor_diff_2k.jpg"); // Replace with the path to your texture
     wallTexture.wrapS = THREE.RepeatWrapping;
     wallTexture.wrapT = THREE.RepeatWrapping;
-    wallTexture.repeat.set(5,5);
+    wallTexture.repeat.set(5, 5);
     // Create the material with the texture
     const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture });
 
@@ -783,6 +787,7 @@ class Scene {
       this.camera.position.y = targetHeight;
       this.verticalVelocity = 0;
     }
+
     // Update player axes helper
     this.playerAxesHelper.position.copy(this.camera.position);
     this.playerAxesHelper.rotation.copy(this.camera.rotation);
@@ -810,6 +815,45 @@ class Scene {
         ),
       );
     }
+
+    // Update minimap with normalized coordinates
+    const worldWidth = 2000; // Adjust based on your world size
+    const worldHeight = 2000; // Adjust based on your world size
+
+    const normalizedX = (this.camera.position.x + worldWidth / 2) / worldWidth;
+    const normalizedY =
+      (this.camera.position.z + worldHeight / 2) / worldHeight;
+
+    // Get rotation from camera's quaternion
+    const rotation = new THREE.Euler().setFromQuaternion(
+      this.camera.quaternion,
+      "YXZ",
+    );
+
+    this.objectsToCheck.map((_) =>
+      console.log({
+        x: (_.object.position.x + worldWidth / 2) / worldWidth,
+        y: (_.object.position.z + worldHeight / 2) / worldHeight,
+      }),
+    );
+
+    this.minimap.update({
+      player: {
+        x: normalizedX,
+        y: normalizedY,
+        rotation: -rotation.y, // Use Y rotation for 2D minimap
+      },
+      enemies: this.shooter.getTargets().map((target) => ({
+        x: (target.position.x + worldWidth / 2) / worldWidth,
+        y: (target.position.z + worldHeight / 2) / worldHeight,
+      })),
+      obstacles: this.objectsToCheck.map((_) => ({
+        x: (_.object.position.x + worldWidth / 2) / worldWidth,
+        y: (_.object.position.z + worldHeight / 2) / worldHeight,
+        width: 0.1,
+        height: 0.1,
+      })),
+    });
   }
 
   loadMutableObjects() {
@@ -834,10 +878,11 @@ class Scene {
     //render objects
     this.loadMutableObjects();
     // this.shootingListener();
+
     this.renderer.render(this.scene, this.camera);
 
     //draw minimap
-    this.minimap.draw();
+    // this.minimap.draw();
   };
   checkCollision() {
     for (const { boundingBox } of this.objectsToCheck) {

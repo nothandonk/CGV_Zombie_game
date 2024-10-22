@@ -196,6 +196,10 @@ export class ShootingMechanism {
     this.targets.push(target);
   }
 
+  getTargets() {
+    return this.targets;
+  }
+
   removeTarget(target) {
     const index = this.targets.indexOf(target);
     if (index > -1) {

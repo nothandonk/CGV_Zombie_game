@@ -6,98 +6,192 @@
         <style>
             body {
                 margin: 0;
+                font-family: Arial, sans-serif;
+                overflow: hidden;
             }
+
             #hud {
                 position: absolute;
-                top: 10px;
-                right: 10px;
+                top: 20px;
+                right: 20px;
                 color: white;
-                font-family: Arial, sans-serif;
+                text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
             }
+
+            /* Enhanced bar styling */
+            .bar-container {
+                position: relative;
+                margin-bottom: 15px;
+            }
+
+            .bar-label {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 1;
+                font-weight: bold;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            }
+
+            #health-bar,
             #stamina-bar {
                 width: 200px;
-                height: 20px;
-                background-color: #add8e6;
+                height: 25px;
+                background-color: rgba(0, 0, 0, 0.5);
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                border-radius: 12px;
+                overflow: hidden;
                 margin-bottom: 10px;
             }
-            #health-bar {
-                width: 200px;
-                height: 20px;
-                background-color: #333;
-                margin-bottom: 10px;
-            }
+
             #health-bar-fill {
                 width: 100%;
                 height: 100%;
-                background-color: #0f0;
+                background: linear-gradient(to right, #ff4444, #ff6666);
+                transition: width 0.3s ease;
             }
+
             #stamina-bar-fill {
                 width: 100%;
                 height: 100%;
-                background-color: #0000ff;
+                background: linear-gradient(to right, #4444ff, #6666ff);
+                transition: width 0.3s ease;
             }
+
+            /* Enhanced minimap styling */
             #minimap-container {
-                width: 100px;
-                height: 100px;
+                width: 150px;
+                height: 150px;
                 background-color: rgba(0, 0, 0, 0.5);
-                border: 1px solid white;
-                margin-bottom: 10px;
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                overflow: hidden;
+                margin-bottom: 15px;
             }
+
+            #minimap {
+                width: 100%;
+                height: 100%;
+            }
+
+            /* Enhanced stats panel */
             #stats {
                 background-color: rgba(0, 0, 0, 0.5);
-                padding: 5px;
+                padding: 15px;
+                border-radius: 10px;
+                border: 2px solid rgba(255, 255, 255, 0.1);
             }
-            #game-over-overlay, #level-completed-overlay  {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            font-size: 2em;
-            z-index: 10;
-        }
 
+            #stats p {
+                margin: 5px 0;
+                display: flex;
+                justify-content: space-between;
+                font-size: 1.1em;
+            }
 
+            #stats span {
+                font-weight: bold;
+                color: #44ff44;
+            }
 
-        #restart-button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 1em;
-            cursor: pointer;
-        }
+            /* Enhanced overlay styling */
+            #game-over-overlay,
+            #level-completed-overlay {
+                position: fixed;
+                inset: 0;
+                background-color: rgba(0, 0, 0, 0.8);
+                color: white;
+                display: none;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                font-size: 2.5em;
+                z-index: 10;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+
+            #game-over-overlay div {
+                color: #ff4444;
+                font-weight: bold;
+                margin-bottom: 20px;
+                animation: pulse 2s infinite;
+            }
+
+            #level-completed-overlay div {
+                color: #44ff44;
+                font-weight: bold;
+                margin-bottom: 20px;
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.1);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+
+            #restart-button,
+            #next-level-button {
+                margin-top: 20px;
+                padding: 15px 30px;
+                font-size: 0.5em;
+                cursor: pointer;
+                background: linear-gradient(to bottom, #666, #444);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                transition:
+                    transform 0.2s,
+                    background 0.2s;
+                text-transform: uppercase;
+                font-weight: bold;
+            }
+
+            #restart-button:hover,
+            #next-level-button:hover {
+                transform: scale(1.1);
+                background: linear-gradient(to bottom, #777, #555);
+            }
         </style>
     </head>
     <body>
         <div id="hud">
-            <div id="health-bar"><div id="health-bar-fill"></div></div>
-            <div id="stamina-bar"><div id="stamina-bar-fill"></div></div>
+            <div class="bar-container">
+                <div class="bar-label">Health</div>
+                <div id="health-bar"><div id="health-bar-fill"></div></div>
+            </div>
+            <div class="bar-container">
+                <div class="bar-label">Stamina</div>
+                <div id="stamina-bar"><div id="stamina-bar-fill"></div></div>
+            </div>
             <div id="minimap-container">
-                <canvas id="minimap" width="100" height="100"></canvas>
+                <canvas id="minimap" width="150" height="150"></canvas>
             </div>
             <div id="stats">
                 <p>Score: <span id="score">0</span></p>
                 <p>Ammo: <span id="ammo">100</span></p>
+                <p>Wave: <span id="wave">1</span></p>
+                <p>Zombies: <span id="zombies">10</span></p>
             </div>
         </div>
-        <!-- Game Over Overlay -->
-    <div id="game-over-overlay">
-        <div>Game Over</div>
-        <button id="restart-button">Restart</button>
-    </div>
-    <!-- Level Completed Overlay -->
-    <div id="level-completed-overlay">
-        <div>Level Completed Successfully</div>
-        <button id="next-level-button">Next Level</button>
-    </div>
-    <script src="zombie.js"></script>
-</body>
-</html>
+
+        <div id="game-over-overlay">
+            <div>Game Over</div>
+            <button id="restart-button">Restart Game</button>
+        </div>
+
+        <div id="level-completed-overlay">
+            <div>Level Completed!</div>
+            <button id="next-level-button">Next Level</button>
+        </div>
+
         <script type="importmap">
             {
                 "imports": {
