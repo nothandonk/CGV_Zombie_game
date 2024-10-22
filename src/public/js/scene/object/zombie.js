@@ -3,12 +3,14 @@ import { FBXLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/j
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
 
 class Zombie {
-    constructor(scene, camera, otherObjects, shooter) {
+    constructor(world, type = "normal") {
+        this.type = type;
         this.isDead = false;
-        this.scene = scene;
-        this.camera = camera;
-        this.otherObjects = otherObjects;
-        this.shooter = shooter;
+        this.scene = world.scene;
+        this.world = world;
+        this.camera = world.camera;
+        this.otherObjects = world.objectsToCheck;
+        this.shooter = world.shooter;
         this.loader = new GLTFLoader();
         this.fbxLoader = new FBXLoader();
         this.model = null;
@@ -23,10 +25,6 @@ class Zombie {
         this.actions = {}; 
         this.currentAction = null;
 
-        this.walkingAction = null;
-        this.punchingAction = null;
-        this.idleAction = null;
-
         // Add audio listener to the camera
         this.listener = new THREE.AudioListener();
         this.camera.add(this.listener);
@@ -34,11 +32,36 @@ class Zombie {
         // Set up positional audio for zombie
         this.zombieSound = new THREE.PositionalAudio(this.listener);
 
+        this.setAttributesBasedOnType();
+
         this.init();
     }
 
+    setAttributesBasedOnType() {
+        switch (this.type) {
+            case 'normal':
+                this.speed = 0.4;
+                this.loadModel('zombie1.glb');
+                break;
+            case 'fast':
+                this.speed = 0.6;
+                this.health = 150;
+                this.loadModel('zombie2.glb');
+                break;
+            case 'crawling':
+                this.speed = 0.3;
+                this.health = 200;
+                this.loadModel('zombie3.glb');
+                break;
+
+            default:
+                this.speed = 0.3;
+                this.loadModel('zombie1.glb');
+                break;
+        }
+    }
+
     init() {
-        this.loadModel();
         this.loadZombieSound();
         
         // Wait for any user interaction to start the audio context
@@ -62,8 +85,8 @@ class Zombie {
         this.animate();
     }
 
-    loadModel() {
-        this.loader.load('/zombie1.glb', (gltf) => {
+    loadModel(modelPath) {
+        this.loader.load(modelPath, (gltf) => {
             this.model = gltf.scene;
             this.model.position.set(0, 0, -50);
             this.model.scale.set(20, 20, 20);
@@ -104,7 +127,7 @@ class Zombie {
     
         if (this.health > 0) {
             // Play taking damage animation
-            this.playTakingDamageAnimation();
+            //this.playTakingDamageAnimation();
         } else {
             // If health reaches 0 or below, trigger death
             this.die();
@@ -161,7 +184,7 @@ class Zombie {
                     child.material.dispose();
                 }
             });
-        }, 1000); // Wait 2 seconds to remove the zombie after the death animation
+        }, 1000); // Wait 1 seconds to remove the zombie after the death animation
     }
 
     loadAnimation(animationPath, name) {
@@ -222,7 +245,11 @@ class Zombie {
 
     update() {
         if (this.model) {
-            this.model.position.y = 0;
+            const terrainHeight = this.world.getTerrainHeight(
+                this.model.position.x,
+                this.model.position.z,
+            );
+            this.model.position.y = terrainHeight;
     
             // Calculate direction to camera
             const direction = new THREE.Vector3();
