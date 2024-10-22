@@ -206,12 +206,13 @@ class Scene {
     this.loadBodybag();
     this.loadShakaZulu();
     this.loadHospital();
-    //this.loadBuild();
-    //this.loadpath();
+    this.loadBuild();
+  
     this.loadcar();
-    // this.loadAmbulance();
     this.loadHospital();
-    //this.loadAmbulance();
+    this.loadTombstone();
+    this.loadTombstoneTwo();
+    this.loadWall();
     this.loadZombie();
     this.gameState.startNewWave();
 
@@ -237,10 +238,10 @@ class Scene {
   loadBuild() {
     const loader = new GLTFLoader();
     let fact;
-    loader.load("/old_factory_ruin.glb", (gltf) => {
+    loader.load("/abandoned_barn.glb", (gltf) => {
       fact = gltf.scene;
-      fact.scale.set(10, 10, 10);
-      fact.position.set(-600, -55, -100);
+      fact.scale.set(25, 25, 25);
+      fact.position.set(-600, -5, 0);
       fact.rotation.y = Math.PI / 2;
       this.scene.add(fact);
 
@@ -250,17 +251,7 @@ class Scene {
       this.objectsToCheck.push({ object: fact, boundingBox: boundingBox });
     });
   }
-  loadpath() {
-    const gltfLoader = new GLTFLoader();
-    let scene;
-    gltfLoader.load("/way_path_blocks.glb", (gltf) => {
-      scene = gltf.scene;
-      scene.scale.set(600, 200, 0); // Adjust scale if needed
-      scene.position.set(550, -100, 0); // Position th
-      scene.rotation.x = Math.PI / 2;
-      this.scene.add(scene);
-    });
-  }
+  
   loadcar() {
     const gltfLoader = new GLTFLoader();
     let scene;
@@ -307,19 +298,44 @@ class Scene {
     );
   }
 
-  loadAmbulance() {
+  loadTombstone() {
     const gltfLoader = new GLTFLoader();
     let ambulance = new GLTFObject(
-      "/ambulance.glb",
+      "/tombstone_set__1.glb",
+      [700, 0, 0],
       [0, 0, 0],
-      [0, 0, 0],
-      [10, 10, 10],
+      [50, 50, 50],
       this,
       false,
       false,
     );
   }
+  loadTombstoneTwo() {
+    const gltfLoader = new GLTFLoader();
+    let ambulance = new GLTFObject(
+      "/tombstone_set__1.glb",
+      [700, 0, -300],
+      [0, 0, 0],
+      [50, 50, 50],
+      this,
+      false,
+      false,
+    );
+  }
+  lo
 
+  loadWall(){
+    const gltfLoader = new GLTFLoader();
+    let wall = new GLTFObject(
+      "/wall_08.glb",
+      [750, 0, 800],
+      [0, Math.PI/2, 0],
+      [10, 20, 20],
+      this,
+      false,
+      false,
+    );
+  }
   loadShakaZulu() {
     const gltfLoader = new GLTFLoader();
     let scene;
