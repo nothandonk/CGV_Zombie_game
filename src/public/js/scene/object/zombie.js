@@ -3,8 +3,9 @@ import { FBXLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/j
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
 
 class Zombie {
-    constructor(world, type = "normal") {
+    constructor(world, position, type = "normal") {
         this.type = type;
+        this.position = position;
         this.isDead = false;
         this.scene = world.scene;
         this.world = world;
@@ -88,7 +89,7 @@ class Zombie {
     loadModel(modelPath) {
         this.loader.load(modelPath, (gltf) => {
             this.model = gltf.scene;
-            this.model.position.set(0, 0, -50);
+            this.model.position.set(this.position[0], this.position[1], this.position[2]);
             this.model.scale.set(20, 20, 20);
 
             // Associate this zombie instance with the model
