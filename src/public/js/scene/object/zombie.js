@@ -3,7 +3,7 @@ import { FBXLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/j
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
 
 class Zombie {
-    constructor(world, position, type = "normal") {
+    constructor(world, position,  type = "normal") {
         this.type = type;
         this.position = position;
         this.isDead = false;
@@ -82,6 +82,8 @@ class Zombie {
         // Listen for a user interaction (click or keydown)
         window.addEventListener('click', resumeAudioContext);
         window.addEventListener('keydown', resumeAudioContext);
+
+        //this.world.gameState.addZombie();
 
         this.animate();
     }
@@ -164,6 +166,7 @@ class Zombie {
 
     die() {
         if (this.isDead) return; // Prevent double death logic
+        //this.world.gameState.killZombie()
         this.isDead = true;
 
         if (this.zombieSound && this.zombieSound.isPlaying) {
