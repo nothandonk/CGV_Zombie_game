@@ -1,13 +1,14 @@
 import * as THREE from "three";
 
 export class ShootingMechanism {
-  constructor(camera, scene) {
-    this.camera = camera;
-    this.scene = scene;
+  constructor(world) {
+    this.camera = world.camera;
+    this.scene = world.scene;
     this.raycaster = new THREE.Raycaster();
     this.targets = [];
     this.crosshair = this.createCrosshair();
     this.projectiles = [];
+    this.gameState = world.gameState;
 
     // Gun position relative to camera
     this.gunOffset = new THREE.Vector3(3, -3.2, -10);

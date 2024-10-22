@@ -5,6 +5,7 @@ import { RGBELoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/
 import Zombie from "./object/zombie.js";
 import MiniMap from "../hud/minimap.js";
 import { ShootingMechanism } from "./shooting.js";
+import GameState from "../gameState.js";
 
 class Scene {
   constructor() {
@@ -13,6 +14,7 @@ class Scene {
     // const fogNear = 10;  // Distance at which the fog starts
     // const fogFar = 1000;  // Distance at which the fog is fully opaque
     // this.scene.fog = new THREE.Fog(fogColor, fogNear, fogFar);
+    this.gameState = new GameState(this);
 
     const initialFogColor = 0x4b4b4b; // A medium dark grey
     this.scene.fog = new THREE.Fog(initialFogColor, 50, 1000);
@@ -105,7 +107,7 @@ class Scene {
     this.objectsToCheck = [];
     this.playerBoundingBox = new THREE.Box3();
 
-    this.shooter = new ShootingMechanism(this.camera, this.scene);
+    this.shooter = new ShootingMechanism(this);
   }
 
   onMouseMove(event) {
@@ -181,6 +183,8 @@ class Scene {
     this.loadHospital();
     //this.loadAmbulance();
     this.loadZombie();
+    this.gameState.startNewWave();
+
     this.animate();
   }
 
@@ -816,44 +820,7 @@ class Scene {
       );
     }
 
-    // Update minimap with normalized coordinates
-    const worldWidth = 2000; // Adjust based on your world size
-    const worldHeight = 2000; // Adjust based on your world size
-
-    const normalizedX = (this.camera.position.x + worldWidth / 2) / worldWidth;
-    const normalizedY =
-      (this.camera.position.z + worldHeight / 2) / worldHeight;
-
-    // Get rotation from camera's quaternion
-    const rotation = new THREE.Euler().setFromQuaternion(
-      this.camera.quaternion,
-      "YXZ",
-    );
-
-    this.objectsToCheck.map((_) =>
-      console.log({
-        x: (_.object.position.x + worldWidth / 2) / worldWidth,
-        y: (_.object.position.z + worldHeight / 2) / worldHeight,
-      }),
-    );
-
-    this.minimap.update({
-      player: {
-        x: normalizedX,
-        y: normalizedY,
-        rotation: -rotation.y, // Use Y rotation for 2D minimap
-      },
-      enemies: this.shooter.getTargets().map((target) => ({
-        x: (target.position.x + worldWidth / 2) / worldWidth,
-        y: (target.position.z + worldHeight / 2) / worldHeight,
-      })),
-      obstacles: this.objectsToCheck.map((_) => ({
-        x: (_.object.position.x + worldWidth / 2) / worldWidth,
-        y: (_.object.position.z + worldHeight / 2) / worldHeight,
-        width: 0.1,
-        height: 0.1,
-      })),
-    });
+    this.gameState.updateMinimap(this.minimap);
   }
 
   loadMutableObjects() {
@@ -877,7 +844,7 @@ class Scene {
     this.updatePlayerMovement();
     //render objects
     this.loadMutableObjects();
-
+    this.gameState.updateUI();
     this.renderer.render(this.scene, this.camera);
   };
   checkCollision() {
