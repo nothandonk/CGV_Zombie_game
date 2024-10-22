@@ -159,6 +159,14 @@
                 transform: scale(1.1);
                 background: linear-gradient(to bottom, #777, #555);
             }
+            #Second_view{
+                position: absolute;
+                right: 2rem;
+                bottom: 2rem;
+                width: 350px;
+                height: 350px;
+                box-shadow: 1px 1px 5px 3px rgba(0, 0, 0, 0.5);
+            }
         </style>
     </head>
     <body>
@@ -180,8 +188,9 @@
                 <p>Wave: <span id="wave">0</span></p>
                 <p>Zombies: <span id="zombies">0</span></p>
             </div>
+           
         </div>
-
+        <div id = "Second_view"></div>
         <div id="game-over-overlay">
             <div>Game Over</div>
             <button id="restart-button">Restart Game</button>
