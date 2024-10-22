@@ -286,12 +286,9 @@ class Scene {
       this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
     }); */
 
-    const zombie = new Zombie(
-      this.scene,
-      this.camera,
-      this.objectsToCheck,
-      this,
-    );
+    const zombie = new Zombie(this);
+    const boundingBox = new THREE.Box3().setFromObject(zombie);
+    this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
   }
 
   loadTower() {

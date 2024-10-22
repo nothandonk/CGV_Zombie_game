@@ -1,15 +1,20 @@
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
+import { FBXLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/FBXLoader.js";
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
 
 class Zombie {
-  constructor(scene, camera, otherObjects, world) {
-    this.scene = scene;
+  constructor(world, type = "normal") {
+    this.type = type;
+    this.isDead = false;
+    this.scene = world.scene;
     this.world = world;
-    this.camera = camera;
-    this.otherObjects = otherObjects;
+    this.camera = world.camera;
+    this.otherObjects = world.objectsToCheck;
+    this.shooter = world.shooter;
     this.loader = new GLTFLoader();
+    this.fbxLoader = new FBXLoader();
     this.model = null;
-    this.speed = 1;
+    this.speed = 0.3;
     this.isAttacking = false;
     this.boundingBox = null;
     this.health = 100;
@@ -20,10 +25,6 @@ class Zombie {
     this.actions = {};
     this.currentAction = null;
 
-    this.walkingAction = null;
-    this.punchingAction = null;
-    this.idleAction = null;
-
     // Add audio listener to the camera
     this.listener = new THREE.AudioListener();
     this.camera.add(this.listener);
@@ -31,11 +32,36 @@ class Zombie {
     // Set up positional audio for zombie
     this.zombieSound = new THREE.PositionalAudio(this.listener);
 
+    this.setAttributesBasedOnType();
+
     this.init();
   }
 
+  setAttributesBasedOnType() {
+    switch (this.type) {
+      case "normal":
+        this.speed = 0.4;
+        this.loadModel("zombie1.glb");
+        break;
+      case "fast":
+        this.speed = 0.6;
+        this.health = 150;
+        this.loadModel("zombie2.glb");
+        break;
+      case "crawling":
+        this.speed = 0.3;
+        this.health = 200;
+        this.loadModel("zombie3.glb");
+        break;
+
+      default:
+        this.speed = 0.3;
+        this.loadModel("zombie1.glb");
+        break;
+    }
+  }
+
   init() {
-    this.loadModel();
     this.loadZombieSound();
 
     // Wait for any user interaction to start the audio context
@@ -55,40 +81,32 @@ class Zombie {
     // Listen for a user interaction (click or keydown)
     window.addEventListener("click", resumeAudioContext);
     window.addEventListener("keydown", resumeAudioContext);
-
-    //listen for hit markers
-    document.addEventListener("targetHit", this.onHit);
-
+    this.world.gameState.addZombie();
     this.animate();
   }
 
-  onHit(e) {
-    const target = e.detail.target;
-    console.log(target, this.model);
-  }
-
-  loadModel() {
+  loadModel(modelPath) {
     this.loader.load(
-      "/zombie1.glb",
+      modelPath,
       (gltf) => {
         this.model = gltf.scene;
         this.model.position.set(0, 0, -50);
         this.model.scale.set(20, 20, 20);
+
+        // Associate this zombie instance with the model
+        this.model.userData.zombieInstance = this;
+
         this.scene.add(this.model);
         this.boundingBox = new THREE.Box3().setFromObject(this.model);
-        this.otherObjects.push({
-          object: this.model,
-          boundingBox: this.boundingBox,
-        });
 
         // Attach sound to zombie model
         this.model.add(this.zombieSound);
 
-        //add as target
-        this.world.shooter.addTarget(this.model);
-
         // Set up animation mixer
         this.mixer = new THREE.AnimationMixer(this.model);
+
+        // Add zombie to shooting targets
+        this.shooter.addTarget(this.model);
 
         this.actions["walking"] = this.mixer.clipAction(
           gltf.animations.find((anim) => anim.name === "walking"),
@@ -99,6 +117,9 @@ class Zombie {
         this.actions["idle"] = this.mixer.clipAction(
           gltf.animations.find((anim) => anim.name === "idle"),
         );
+
+        this.loadAnimation("ZombieHit.fbx", "hit");
+        this.loadAnimation("ZombieDying.fbx", "dying");
 
         this.setAction("walking");
 
@@ -111,8 +132,94 @@ class Zombie {
     );
   }
 
+  takeDamage(damage) {
+    this.health -= damage;
+    console.log(`Zombie hit! Current health: ${this.health}`);
+
+    if (this.health > 0) {
+      // Play taking damage animation
+      //this.playTakingDamageAnimation();
+    } else {
+      // If health reaches 0 or below, trigger death
+      this.die();
+    }
+  }
+
+  playTakingDamageAnimation() {
+    if (this.isDead || this.currentAction === this.actions["hit"]) return; // Prevent playing if already dead or in hit animation
+
+    const previousAction = this.currentAction; // Save the current action
+    this.setAction("hit"); // Play hit animation
+
+    this.actions["hit"].setEffectiveTimeScale(1); // Adjust the speed (1 is normal speed, < 1 is slower)
+
+    // Ensure it's clamped and loops only once
+    this.currentAction.clampWhenFinished = true;
+    this.currentAction.setLoop(THREE.LoopOnce);
+
+    // Add event listener to switch back after hit animation finishes
+    const onAnimationFinished = (event) => {
+      if (
+        event.action === this.currentAction &&
+        !this.isDead &&
+        previousAction
+      ) {
+        this.setAction(previousAction._clip.name); // Return to previous animation
+      }
+      this.mixer.removeEventListener("finished", onAnimationFinished); // Clean up the listener
+    };
+
+    this.mixer.addEventListener("finished", onAnimationFinished); // Listen for animation finish
+
+    this.currentAction.play(); // Start playing hit animation
+  }
+
+  die() {
+    if (this.isDead) return; // Prevent double death logic
+    this.world.gameState.killZombie();
+    this.isDead = true;
+
+    if (this.zombieSound && this.zombieSound.isPlaying) {
+      this.zombieSound.stop();
+    }
+
+    this.setAction("dying"); // Play the dying animation
+    console.log("Zombie is dead!");
+
+    // Stop further updates
+    setTimeout(() => {
+      this.shooter.removeTarget(this.model); // Remove zombie from shooting targets
+      this.scene.remove(this.model); // Optionally remove from the scene
+
+      // Optionally dispose of resources
+      this.model.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose();
+          child.material.dispose();
+        }
+      });
+    }, 1000); // Wait 1 seconds to remove the zombie after the death animation
+  }
+
+  loadAnimation(animationPath, name) {
+    this.fbxLoader.load(
+      animationPath,
+      (fbx) => {
+        const animation = fbx.animations[0]; // Assuming there's one animation
+        this.actions[name] = this.mixer.clipAction(animation);
+        console.log("FBX Animation loaded successfully");
+        console.log(this.actions);
+      },
+      undefined,
+      (error) => {
+        console.error("Error loading FBX animation", error);
+      },
+    );
+  }
+
   setAction(actionName) {
-    if (this.currentAction) {
+    if (this.currentAction && this.currentAction !== this.actions[actionName]) {
+      // Only fade out if it's a different action
       this.currentAction.fadeOut(0.5); // Fade out the current action
     }
 
@@ -197,8 +304,8 @@ class Zombie {
         ),
       );
 
-      console.log("Zombie position:", this.model.position);
-      console.log("Distance to camera:", distanceToCamera);
+      //console.log("Zombie position:", this.model.position);
+      //console.log("Distance to camera:", distanceToCamera);
 
       // Move the zombie towards the camera if it's beyond the stopping distance and not colliding
       if (distanceToCamera > stoppingDistance && !this.checkCollision()) {
@@ -208,13 +315,11 @@ class Zombie {
           this.setAction("walking");
         }
       } else {
-        console.log(
-          "Zombie reached stopping distance from player or collision detected.",
-        );
+        //console.log("Zombie reached stopping distance from player or collision detected.");
         // Ensure the zombie's position is set directly at the stopping distance
-        // this.model.position
-        //   .copy(this.camera.position)
-        //   .sub(direction.multiplyScalar(stoppingDistance));
+        this.model.position
+          .copy(this.camera.position)
+          .sub(direction.multiplyScalar(stoppingDistance));
 
         if (
           distanceToCamera <= stoppingDistance &&
@@ -228,8 +333,18 @@ class Zombie {
       const angle = Math.atan2(direction.x, direction.z);
       this.model.rotation.y = angle;
 
+      // Update player bounding box based on the camera's position
+      this.playerBoundingBox.setFromCenterAndSize(
+        this.camera.position,
+        new THREE.Vector3(
+          this.playerRadius * 2,
+          this.playerHeight,
+          this.playerRadius * 2,
+        ),
+      );
+
       if (this.checkCollision()) {
-        console.log("Collision detected with player!");
+        //console.log("Collision detected with player!");
       }
 
       // Update animation mixer
