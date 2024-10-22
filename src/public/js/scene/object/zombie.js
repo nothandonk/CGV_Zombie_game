@@ -112,25 +112,28 @@ class Zombie {
     }
 
     playTakingDamageAnimation() {
-        if (this.isDead) return; // Prevent playing if already dead
+        if (this.isDead || this.currentAction === this.actions['hit']) return; // Prevent playing if already dead or in hit animation
     
         const previousAction = this.currentAction; // Save the current action
-        this.setAction('hit'); // Play damage animation
+        this.setAction('hit'); // Play hit animation
+
+        this.actions['hit'].setEffectiveTimeScale(1); // Adjust the speed (1 is normal speed, < 1 is slower)
     
-        // Set the action to play once and not loop
+        // Ensure it's clamped and loops only once
         this.currentAction.clampWhenFinished = true;
         this.currentAction.setLoop(THREE.LoopOnce);
-        this.currentAction.play(); // Start playing the hit animation
     
-        // Get the duration of the hit animation for timing
-        const damageDuration = this.actions['hit'] ? this.actions['hit'].getClip().duration : 1;
-    
-        // After the damage animation finishes, return to the previous action
-        setTimeout(() => {
-            if (!this.isDead && previousAction) {
+        // Add event listener to switch back after hit animation finishes
+        const onAnimationFinished = (event) => {
+            if (event.action === this.currentAction && !this.isDead && previousAction) {
                 this.setAction(previousAction._clip.name); // Return to previous animation
             }
-        }, damageDuration * 1000); // Duration of damage animation
+            this.mixer.removeEventListener('finished', onAnimationFinished); // Clean up the listener
+        };
+        
+        this.mixer.addEventListener('finished', onAnimationFinished); // Listen for animation finish
+    
+        this.currentAction.play(); // Start playing hit animation
     }
     
     
@@ -173,7 +176,8 @@ class Zombie {
     }
 
     setAction(actionName) {
-        if (this.currentAction) {
+        if (this.currentAction && this.currentAction !== this.actions[actionName]) {
+            // Only fade out if it's a different action
             this.currentAction.fadeOut(0.5); // Fade out the current action
         }
         
