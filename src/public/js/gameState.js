@@ -74,6 +74,10 @@ class GameState {
     }
   }
 
+  addZombie() {
+    this.zombiesRemainingInWave++;
+  }
+
   getHealthColor(percentage) {
     if (percentage > 60) return "#4CAF50"; // Green
     if (percentage > 30) return "#FFC107"; // Yellow
@@ -120,19 +124,6 @@ class GameState {
           height: 0.1,
         })),
       });
-    }
-  }
-
-  addEnemy(enemy) {
-    this.enemies.push(enemy);
-    this.updateUI();
-  }
-
-  removeEnemy(enemy) {
-    const index = this.enemies.findIndex((e) => e.id === enemy.id);
-    if (index !== -1) {
-      this.enemies.splice(index, 1);
-      this.updateUI();
     }
   }
 
@@ -193,7 +184,6 @@ class GameState {
     if (this.zombiesRemainingInWave > 0) {
       this.zombiesRemainingInWave--;
       this.killCount++;
-      this.removeEnemy(zombie);
       this.updateUI();
 
       if (this.zombiesRemainingInWave === 0) {
