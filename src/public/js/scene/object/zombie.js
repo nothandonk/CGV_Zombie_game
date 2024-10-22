@@ -29,8 +29,8 @@ class Zombie {
         this.listener = new THREE.AudioListener();
         this.camera.add(this.listener);
 
-        // Set up positional audio for zombie
-        this.zombieSound = new THREE.PositionalAudio(this.listener);
+    // Set up positional audio for zombie
+    this.zombieSound = new THREE.PositionalAudio(this.listener);
 
         this.setAttributesBasedOnType();
 
@@ -211,37 +211,42 @@ class Zombie {
         }
     }
 
-    loadZombieSound() {
-        const audioLoader = new THREE.AudioLoader();
-        audioLoader.load('audio/157044_slave2thelight_solo-kyma-zombie-3 (online-audio-converter.com).mp3', (buffer) => {
-            this.zombieSound.setBuffer(buffer);
-            this.zombieSound.setRefDistance(100); // Distance over which the sound is audible
-            this.zombieSound.setLoop(true);
-            this.zombieSound.setVolume(0.4);
-            this.zombieSound.play(); // Play the sound when loaded
-            console.log('Zombie sound loaded and playing');
-        }, undefined, (error) => {
-            console.error('Error loading zombie sound', error);
-        });
+  loadZombieSound() {
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load(
+      "audio/157044_slave2thelight_solo-kyma-zombie-3 (online-audio-converter.com).mp3",
+      (buffer) => {
+        this.zombieSound.setBuffer(buffer);
+        this.zombieSound.setRefDistance(100); // Distance over which the sound is audible
+        this.zombieSound.setLoop(true);
+        this.zombieSound.setVolume(0.4);
+        this.zombieSound.play(); // Play the sound when loaded
+        console.log("Zombie sound loaded and playing");
+      },
+      undefined,
+      (error) => {
+        console.error("Error loading zombie sound", error);
+      },
+    );
+  }
+
+  checkCollision() {
+    if (!this.boundingBox || !this.world.playerBoundingBox) return false;
+
+    // Check for collision with the player's bounding box
+    if (this.world.playerBoundingBox.intersectsBox(this.boundingBox)) {
+      return true; // Collision detected with player
     }
 
-    checkCollision() {
-        if (!this.boundingBox || !this.playerBoundingBox) return false;
+    // Check for collision with other objects
+    // for (const obj of this.otherObjects) {
+    //   if (this.boundingBox.intersectsBox(obj.boundingBox)) {
+    //     return true;
+    //   }
+    // }
 
-        // Check for collision with the player's bounding box
-        if (this.playerBoundingBox.intersectsBox(this.boundingBox)) {
-            return true; // Collision detected with player
-        }
-
-        // Check for collision with other objects
-        for (const obj of this.otherObjects) {
-            if (this.boundingBox.intersectsBox(obj.boundingBox)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    return false;
+  }
 
     update() {
         if (this.model) {
