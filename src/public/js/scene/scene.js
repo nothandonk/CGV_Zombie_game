@@ -49,7 +49,7 @@ class Scene {
       3000,
     );
     this.camera.position.set(500, 0, 0);
-    this.camera.rotation.y = Math.PI/2;
+    this.camera.rotation.y = Math.PI / 2;
     this.camera.lookAt(0, 0, 0);
     this.camera.logarithmicDepthBuffer = true; // Enable logarithmic depth buffer
     this.scene.add(this.camera); // camera will have children, so this is necessary
@@ -166,7 +166,7 @@ class Scene {
     this.loadImmutableObjects();
 
     // this.loadPlayer();
-   // this.addWall();
+    // this.addWall();
     this.loadBuildings();
     this.loadGravestones();
     this.loadTower();
@@ -877,12 +877,8 @@ class Scene {
     this.updatePlayerMovement();
     //render objects
     this.loadMutableObjects();
-    // this.shootingListener();
 
     this.renderer.render(this.scene, this.camera);
-
-    //draw minimap
-    // this.minimap.draw();
   };
   checkCollision() {
     for (const { boundingBox } of this.objectsToCheck) {
