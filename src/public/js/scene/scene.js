@@ -62,6 +62,36 @@ class Scene {
     this.renderer.setSize(this.width, this.height);
     document.body.appendChild(this.renderer.domElement);
 
+    const secondview = document.getElementById("Second_view");
+    this.secondRenderer = new THREE.WebGLRenderer();
+    this.secondRenderer.setSize(secondview.offsetWidth, secondview.offsetHeight);
+    secondview.appendChild(this.secondRenderer.domElement);
+   
+    // this.secondCamera = new THREE.PerspectiveCamera(
+    //   90,
+    //   secondview.offsetWidth/secondview.offsetHeight,
+    //   0.1,
+    //   500
+    // );
+
+    this.secondCamera = new THREE.OrthographicCamera(
+      secondview.offsetWidth/-2,
+      secondview.offsetWidth/2,
+      secondview.offsetHeight/2,
+      secondview.offsetHeight/-2,
+      1,
+      1000
+    );
+
+    this.secondCamera.position.set(0, 3000, 0);
+
+    this.secondCamera.lookAt(0, 0, 0);
+    this.secondCamera.rotation.z = Math.PI;
+    this.secondCamera.logarithmicDepthBuffer = true;
+
+
+
+  
     // Set up lights
     //this.ambientLight = new THREE.AmbientLight(0x404040);
     //this.scene.add(this.ambientLight);
@@ -186,6 +216,7 @@ class Scene {
     this.gameState.startNewWave();
 
     this.animate();
+    this.animate2();
   }
 
   loadBuildings() {
@@ -847,6 +878,21 @@ class Scene {
     this.loadMutableObjects();
     this.gameState.updateUI();
     this.renderer.render(this.scene, this.camera);
+  };
+
+  animate2 = () => {
+    requestAnimationFrame(this.animate2); // Fix: Was calling this.animate instead of this.animate2
+    
+    // Update second camera position to follow main camera from above
+    this.secondCamera.position.set(
+      this.camera.position.x,
+      this.camera.position.y + 50, // Position it 50 units above the player
+      this.camera.position.z
+    );
+    this.secondCamera.lookAt(this.camera.position); // Look at the player
+    
+    this.loadMutableObjects();
+    this.secondRenderer.render(this.scene, this.secondCamera);
   };
   checkCollision() {
     for (const { boundingBox } of this.objectsToCheck) {
