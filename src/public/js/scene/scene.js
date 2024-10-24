@@ -197,7 +197,7 @@ class Scene {
     this.loadTower();
     this.loadGarage();
     this.loadBodybag();
-    this.loadShakaZulu();
+    //this.loadShakaZulu();
     this.loadHospital();
     //this.loadBuild();
     //this.loadpath();
