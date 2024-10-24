@@ -34,6 +34,7 @@ export class ShootingMechanism {
     // Start animation loop
     this.animate();
   }
+  
 
   getGunWorldPosition() {
     // Create a vector for the gun's position
@@ -45,15 +46,16 @@ export class ShootingMechanism {
 
   createCrosshair() {
     const crosshairGroup = new THREE.Group();
-
+  
     const length = 0.01;
     const thickness = 0.003;
     const gap = 0.01;
-
+  
     const createLine = (x, y, width, height) => {
       const geometry = new THREE.PlaneGeometry(width, height);
       const material = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
+        color: 0x00ffff, // Blue color
+        emissive: 0x0077ff, // Emissive color for glow effect
         side: THREE.DoubleSide,
         transparent: true,
         opacity: 0.8,
@@ -62,41 +64,42 @@ export class ShootingMechanism {
       line.position.set(x, y, 0);
       return line;
     };
-
+  
     const leftLine = createLine(
       -length / 2 - gap / 2 + 0.0275,
       -0.03,
       length,
-      thickness,
+      thickness
     );
     const rightLine = createLine(
       length / 2 + gap / 2 + 0.0275,
       -0.03,
       length,
-      thickness,
+      thickness
     );
     const topLine = createLine(
       0.0275,
       length / 2 + gap / 2 - 0.03,
       thickness,
-      length,
+      length
     );
     const bottomLine = createLine(
       0.0275,
       -length / 2 - gap / 2 - 0.03,
       thickness,
-      length,
+      length
     );
-
+  
     crosshairGroup.add(leftLine);
     crosshairGroup.add(rightLine);
     crosshairGroup.add(topLine);
     crosshairGroup.add(bottomLine);
-
+  
     crosshairGroup.position.z = -1;
-
+  
     return crosshairGroup;
   }
+  
 
   createBullet(startPosition, targetPosition) {
     const geometry = new THREE.BoxGeometry(
@@ -215,11 +218,23 @@ export class ShootingMechanism {
     }
     this.lastShot = now;
 
+    // const originalPosition = this.crosshair.position.clone();
+    // // const originalGunPosition = this.gun.position.clone();
+
+    // this.crosshair.position.y += 5;
+    // // this.gun.position.y += 5;
+ // Save the original position of the camera
+ const originalCameraPosition = this.camera.position.clone();
+
+ // Move the camera 5 units down on the Y-axis
+ this.camera.position.y -= 5;
+
     // Calculate shooting direction from camera center
     this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
 
     // Get the gun's world position
     const gunPos = this.getGunWorldPosition();
+
 
     // Check for intersections with targets
     const intersects = this.raycaster.intersectObjects(this.targets);
@@ -235,6 +250,13 @@ export class ShootingMechanism {
         .add(this.raycaster.ray.direction.clone().multiplyScalar(100));
       this.createBullet(gunPos, targetPos);
     }
+
+    // Set a timeout to move the crosshair back to the original position after 0.1 seconds
+    setTimeout(() => {
+      // this.crosshair.position.copy(originalPosition);
+      // this.gun.position.copy(originalGunPosition);
+      this.camera.position.copy(originalCameraPosition);
+    }, 100);
   }
 
   handleHit(target) {
@@ -243,7 +265,7 @@ export class ShootingMechanism {
 
     setTimeout(() => {
       target.material.copy(originalMaterial);
-    }, 100);
+    }, 200);
 
     const hitEvent = new CustomEvent("targetHit", {
       detail: { target },
@@ -270,3 +292,9 @@ export class ShootingMechanism {
     this.projectiles = [];
   }
 }
+
+
+
+
+
+
