@@ -25,7 +25,7 @@ class GameState {
     this.waveCounter = document.getElementById("wave");
     this.zombieCounter = document.getElementById("zombies");
     this.killCounter = document.getElementById("killCounter");
-    this.gameOverScreen = document.getElementById("gameOverScreen");
+    this.gameOverScreen = document.getElementById("game-over-overlay");
     this.finalScore = document.getElementById("score");
     this.waveCompleteScreen = document.getElementById("waveCompleteScreen");
     this.nextWaveButton = document.getElementById("nextWaveButton");
@@ -68,7 +68,7 @@ class GameState {
     }
 
     // Update game over screen if necessary
-    if (this.isGameOver && this.gameOverScreen && this.finalScore) {
+    if (this.isGameOver) {
       this.gameOverScreen.style.display = "flex";
       this.finalScore.textContent = `Final Score: ${this.killCount} kills`;
     }

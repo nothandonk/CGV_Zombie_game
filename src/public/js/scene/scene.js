@@ -16,6 +16,8 @@ class Scene {
     // this.scene.fog = new THREE.Fog(fogColor, fogNear, fogFar);
     this.gameState = new GameState(this);
 
+    this.clock = new THREE.Clock();
+
     const initialFogColor = 0x4b4b4b; // A medium dark grey
     this.scene.fog = new THREE.Fog(initialFogColor, 50, 1000);
     this.width = window.innerWidth;
@@ -56,6 +58,8 @@ class Scene {
     this.camera.logarithmicDepthBuffer = true; // Enable logarithmic depth buffer
     this.scene.add(this.camera); // camera will have children, so this is necessary
     this.objects = [];
+
+    this.zombies = [];
 
     // Set up renderer1
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -179,20 +183,9 @@ class Scene {
     // );
   }
 
-  async addZombie() {
-    const zombie = new GLTFObject("zombie1.glb"); // Path to the tree model
-    // await zombie.load(); // Ensure the tree model is loaded
-    // this.addObject(zombie); // Add the loaded tree to the scene
-  }
-
   async init() {
     this.generateTerrain();
     this.positionCameraAboveTerrain();
-
-    /* const zombie = new GLTFObject('zombie1.glb');
-    await zombie.load();
-    this.addObject(zombie); */
-
     // this.addZombie();
 
     this.loadImmutableObjects();
@@ -212,7 +205,11 @@ class Scene {
     // this.loadAmbulance();
     this.loadHospital();
     //this.loadAmbulance();
-    this.loadZombie();
+    //this.loadZombie();
+    this.spawnZombie({ x: -150, y: 0, z: -150 });
+    this.spawnZombie({ x: 50, y: 0, z: 50 });
+    this.spawnZombie({ x: 150, y: 0, z: 150 });
+    this.spawnZombie({ x: 250, y: 0, z: 250 });
     this.gameState.startNewWave();
 
     this.animate();
@@ -274,26 +271,12 @@ class Scene {
     });
   }
 
-  loadZombie() {
-    /* const gltfLoader = new GLTFLoader();
-    let zombie;
-    gltfLoader.load("/zombie1.glb", (gltf) => {
-      zombie = gltf.scene;
-      zombie.scale.set(20, 20, 20); // Adjust scale if needed
-      zombie.position.set(0, 0, 0); // Position thxv
-      this.scene.add(zombie);
-      const boundingBox = new THREE.Box3().setFromObject(zombie);
-      this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
-    }); */
+  spawnZombie(position, type) {
+    const zombie = new Zombie(this, position, type);
+    this.zombies.push(zombie);
+    return zombie;
+}
 
-    //for (let i=0; i < 15; i++) {
-
-      const zombie = new Zombie(this, [50, 0, 50]);
-      const boundingBox = new THREE.Box3().setFromObject(zombie);
-      this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
-    //}
-
-  }
 
   loadTower() {
     const gltfLoader = new GLTFLoader();
@@ -874,6 +857,16 @@ class Scene {
   animate = () => {
     requestAnimationFrame(this.animate);
     this.updatePlayerMovement();
+
+    const delta = this.clock.getDelta();
+        
+        // Update all zombies
+        this.zombies.forEach(zombie => {
+            zombie.update(delta);
+        });
+        
+        this.renderer.render(this.scene, this.camera);
+
     //render objects
     this.loadMutableObjects();
     this.gameState.updateUI();
