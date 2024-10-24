@@ -27,8 +27,15 @@ class GameState {
     this.killCounter = document.getElementById("killCounter");
     this.gameOverScreen = document.getElementById("gameOverScreen");
     this.finalScore = document.getElementById("score");
-    this.waveCompleteScreen = document.getElementById("waveCompleteScreen");
-    this.nextWaveButton = document.getElementById("nextWaveButton");
+    this.waveCompleteScreen = document.getElementById(
+      "level-completed-overlay",
+    );
+    this.nextWaveButton = document.getElementById("next-level-button");
+
+    this.nextWaveButton.addEventListener("click", () => {
+      this.waveCompleteScreen.style.display = "none";
+      this.startNewWave();
+    });
 
     // Initial UI update
     this.updateUI();
@@ -177,6 +184,9 @@ class GameState {
     if (this.waveCompleteScreen) {
       this.waveCompleteScreen.style.display = "none";
     }
+
+    //
+    world.loadZombie();
     this.updateUI();
   }
 
