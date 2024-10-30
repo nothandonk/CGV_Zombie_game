@@ -16,6 +16,8 @@ class Scene {
     // this.scene.fog = new THREE.Fog(fogColor, fogNear, fogFar);
     this.gameState = new GameState(this);
 
+    this.clock = new THREE.Clock();
+
     const initialFogColor = 0x4b4b4b; // A medium dark grey
     this.scene.fog = new THREE.Fog(initialFogColor, 50, 1000);
     this.width = window.innerWidth;
@@ -57,6 +59,8 @@ class Scene {
     this.scene.add(this.camera); // camera will have children, so this is necessary
     this.objects = [];
 
+    this.zombies = [];
+
     // Set up renderer1
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(this.width, this.height);
@@ -64,9 +68,12 @@ class Scene {
 
     const secondview = document.getElementById("Second_view");
     this.secondRenderer = new THREE.WebGLRenderer();
-    this.secondRenderer.setSize(secondview.offsetWidth, secondview.offsetHeight);
+    this.secondRenderer.setSize(
+      secondview.offsetWidth,
+      secondview.offsetHeight,
+    );
     secondview.appendChild(this.secondRenderer.domElement);
-   
+
     // this.secondCamera = new THREE.PerspectiveCamera(
     //   90,
     //   secondview.offsetWidth/secondview.offsetHeight,
@@ -75,12 +82,12 @@ class Scene {
     // );
 
     this.secondCamera = new THREE.OrthographicCamera(
-      secondview.offsetWidth/-2,
-      secondview.offsetWidth/2,
-      secondview.offsetHeight/2,
-      secondview.offsetHeight/-2,
+      secondview.offsetWidth / -2,
+      secondview.offsetWidth / 2,
+      secondview.offsetHeight / 2,
+      secondview.offsetHeight / -2,
       1,
-      1000
+      1000,
     );
 
     this.secondCamera.position.set(0, 3000, 0);
@@ -89,9 +96,6 @@ class Scene {
     this.secondCamera.rotation.z = Math.PI;
     this.secondCamera.logarithmicDepthBuffer = true;
 
-
-
-  
     // Set up lights
     //this.ambientLight = new THREE.AmbientLight(0x404040);
     //this.scene.add(this.ambientLight);
@@ -182,21 +186,10 @@ class Scene {
     // );
   }
 
-  async addZombie() {
-    const zombie = new GLTFObject("zombie1.glb"); // Path to the tree model
-    // await zombie.load(); // Ensure the tree model is loaded
-    // this.addObject(zombie); // Add the loaded tree to the scene
-  }
-
   async init() {
     this.initializeRainAndLighting();
     this.generateTerrain();
     this.positionCameraAboveTerrain();
-
-    /* const zombie = new GLTFObject('zombie1.glb');
-    await zombie.load();
-    this.addObject(zombie); */
-
     // this.addZombie();
 
     this.loadImmutableObjects();
@@ -216,7 +209,8 @@ class Scene {
     // this.loadAmbulance();
     this.loadHospital();
     //this.loadAmbulance();
-    this.loadZombie();
+    //this.loadZombie();
+ 
     this.gameState.startNewWave();
 
     this.animate();
@@ -279,22 +273,12 @@ class Scene {
     });
   }
 
-  loadZombie() {
-    /* const gltfLoader = new GLTFLoader();
-    let zombie;
-    gltfLoader.load("/zombie1.glb", (gltf) => {
-      zombie = gltf.scene;
-      zombie.scale.set(20, 20, 20); // Adjust scale if needed
-      zombie.position.set(0, 0, 0); // Position thxv
-      this.scene.add(zombie);
-      const boundingBox = new THREE.Box3().setFromObject(zombie);
-      this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
-    }); */
+  spawnZombie(position, type) {
+    const zombie = new Zombie(this, position, type);
+    this.zombies.push(zombie);
+    return zombie;
+}
 
-    const zombie = new Zombie(this);
-    const boundingBox = new THREE.Box3().setFromObject(zombie);
-    this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
-  }
 
   loadTower() {
     const gltfLoader = new GLTFLoader();
@@ -954,6 +938,16 @@ class Scene {
     //   this.updateRainAndLighting();
     // }
     this.updatePlayerMovement();
+
+    const delta = this.clock.getDelta();
+        
+        // Update all zombies
+        this.zombies.forEach(zombie => {
+            zombie.update(delta);
+        });
+        
+        this.renderer.render(this.scene, this.camera);
+
     //render objects
     this.loadMutableObjects();
    
@@ -964,16 +958,14 @@ class Scene {
   animate2 = () => {
     requestAnimationFrame(this.animate2); // Fix: Was calling this.animate instead of this.animate2
     
-    
-
     // Update second camera position to follow main camera from above
     this.secondCamera.position.set(
       this.camera.position.x,
       this.camera.position.y + 50, // Position it 50 units above the player
-      this.camera.position.z
+      this.camera.position.z,
     );
     this.secondCamera.lookAt(this.camera.position); // Look at the player
-    
+
     this.loadMutableObjects();
     this.secondRenderer.render(this.scene, this.secondCamera);
   };
