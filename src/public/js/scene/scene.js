@@ -16,6 +16,8 @@ class Scene {
     // this.scene.fog = new THREE.Fog(fogColor, fogNear, fogFar);
     this.gameState = new GameState(this);
 
+    this.clock = new THREE.Clock();
+
     const initialFogColor = 0x4b4b4b; // A medium dark grey
     this.scene.fog = new THREE.Fog(initialFogColor, 50, 1000);
     this.width = window.innerWidth;
@@ -57,6 +59,8 @@ class Scene {
     this.scene.add(this.camera); // camera will have children, so this is necessary
     this.objects = [];
 
+    this.zombies = [];
+
     // Set up renderer1
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(this.width, this.height);
@@ -64,9 +68,12 @@ class Scene {
 
     const secondview = document.getElementById("Second_view");
     this.secondRenderer = new THREE.WebGLRenderer();
-    this.secondRenderer.setSize(secondview.offsetWidth, secondview.offsetHeight);
+    this.secondRenderer.setSize(
+      secondview.offsetWidth,
+      secondview.offsetHeight,
+    );
     secondview.appendChild(this.secondRenderer.domElement);
-   
+
     // this.secondCamera = new THREE.PerspectiveCamera(
     //   90,
     //   secondview.offsetWidth/secondview.offsetHeight,
@@ -75,12 +82,12 @@ class Scene {
     // );
 
     this.secondCamera = new THREE.OrthographicCamera(
-      secondview.offsetWidth/-2,
-      secondview.offsetWidth/2,
-      secondview.offsetHeight/2,
-      secondview.offsetHeight/-2,
+      secondview.offsetWidth / -2,
+      secondview.offsetWidth / 2,
+      secondview.offsetHeight / 2,
+      secondview.offsetHeight / -2,
       1,
-      1000
+      1000,
     );
 
     this.secondCamera.position.set(0, 3000, 0);
@@ -89,7 +96,7 @@ class Scene {
     this.secondCamera.rotation.z = Math.PI;
     this.secondCamera.logarithmicDepthBuffer = true;
 
-    //pausing
+
     document.addEventListener("keydown", (event) => {
       if (event.key === "p") {
         this.gameState.togglePause();
@@ -107,8 +114,6 @@ class Scene {
       }
     });
 
-
-  
     // Set up lights
     //this.ambientLight = new THREE.AmbientLight(0x404040);
     //this.scene.add(this.ambientLight);
@@ -119,6 +124,9 @@ class Scene {
     this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     this.directionalLight.position.set(50, 50, 50);
     this.scene.add(this.directionalLight);
+
+    this.scene.fog = new THREE.FogExp2(0x11111f,0.002);
+    this.renderer.setClearColor(this.scene.fog.color);
 
     // Add world axes helper
     const worldAxesHelper = new THREE.AxesHelper(50);
@@ -156,6 +164,9 @@ class Scene {
 
     this.shooter = new ShootingMechanism(this);
   }
+
+	      
+
 
   onMouseMove(event) {
     if (document.pointerLockElement === this.renderer.domElement) {
@@ -196,20 +207,10 @@ class Scene {
     // );
   }
 
-  async addZombie() {
-    const zombie = new GLTFObject("zombie1.glb"); // Path to the tree model
-    // await zombie.load(); // Ensure the tree model is loaded
-    // this.addObject(zombie); // Add the loaded tree to the scene
-  }
-
   async init() {
+    this.initializeRainAndLighting();
     this.generateTerrain();
     this.positionCameraAboveTerrain();
-
-    /* const zombie = new GLTFObject('zombie1.glb');
-    await zombie.load();
-    this.addObject(zombie); */
-
     // this.addZombie();
 
     this.loadImmutableObjects();
@@ -230,11 +231,13 @@ class Scene {
     this.loadTombstone();
     this.loadTombstoneTwo();
     this.loadWall();
-    this.loadZombie();
+    //this.loadZombie();
+ 
     this.gameState.startNewWave();
 
     this.animate();
     this.animate2();
+    this.animateRain();
   }
 
   loadBuildings() {
@@ -282,25 +285,12 @@ class Scene {
     });
   }
 
-  loadZombie() {
-    /* const gltfLoader = new GLTFLoader();
-    let zombie;
-    gltfLoader.load("/zombie1.glb", (gltf) => {
-      zombie = gltf.scene;
-      zombie.scale.set(20, 20, 20); // Adjust scale if needed
-      zombie.position.set(0, 0, 0); // Position thxv
-      this.scene.add(zombie);
-      const boundingBox = new THREE.Box3().setFromObject(zombie);
-      this.objectsToCheck.push({ object: zombie, boundingBox: boundingBox });
-    }); */
+  spawnZombie(position, type) {
+    const zombie = new Zombie(this, position, type);
+    this.zombies.push(zombie);
+    return zombie;
+}
 
-    const zombie = new Zombie(
-      this.scene,
-      this.camera,
-      this.objectsToCheck,
-      this,
-    );
-  }
 
   loadTower() {
     const gltfLoader = new GLTFLoader();
@@ -491,72 +481,72 @@ class Scene {
     const widthSegments = 2000;
     const depthSegments = 2000;
 
-    //skybox
-    // const textureLoader = new THREE.TextureLoader();
-    // const skyboxGeometry = new THREE.BoxGeometry(width, depth, depth);
-    // const skyboxMaterial = new THREE.MeshBasicMaterial({
-    //   map: textureLoader.load("http://localhost:3000/skybox/overcast.png"),
-    //   side: THREE.BackSide,
-    //   transparent: true,
+    // //skybox
+    // // const textureLoader = new THREE.TextureLoader();
+    // // const skyboxGeometry = new THREE.BoxGeometry(width, depth, depth);
+    // // const skyboxMaterial = new THREE.MeshBasicMaterial({
+    // //   map: textureLoader.load("http://localhost:3000/skybox/overcast.png"),
+    // //   side: THREE.BackSide,
+    // //   transparent: true,
+    // // });
+
+    // // const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+    // // this.scene.add(skybox);
+    // const rgbeLoader = new RGBELoader();
+    // rgbeLoader.load("/overcast_soil_2_4k.hdr", (hdrTexture) => {
+    //   hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
+    //   this.scene.environment = hdrTexture;
+    //   this.scene.environment.intensity = 0.05;
+    //   this.scene.background = hdrTexture; // Set the HDR as the background
+    //   //const fogColor = new THREE.Color(0xb0c4de);  // Adjust this color to match your HDR background
+    //   //this.scene.fog = new THREE.Fog(fogColor, 100, 1000);
+    //   //this.renderer.toneMappingExposure = 0.5;
+    //   // Define our dystopian fog color
+    //   const dystopianFogColor = new THREE.Color(0x4b4b4b); // Medium dark grey
+
+    //   // Optional: Slightly adjust the fog color based on the HDR
+    //   const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
+    //     generateMipmaps: false,
+    //     type: THREE.HalfFloatType,
+    //     format: THREE.RGBAFormat,
+    //   });
+
+    //   const renderer = this.renderer;
+    //   const cubeCamera = new THREE.CubeCamera(0.1, 10, renderTarget);
+    //   cubeCamera.update(renderer, this.scene);
+
+    //   const pixelBuffer = new Float32Array(4);
+    //   renderer.readRenderTargetPixels(renderTarget, 0, 0, 1, 1, pixelBuffer);
+
+    //   const hdrColor = new THREE.Color(
+    //     Math.pow(pixelBuffer[0], 1 / 2.2),
+    //     Math.pow(pixelBuffer[1], 1 / 2.2),
+    //     Math.pow(pixelBuffer[2], 1 / 2.2),
+    //   );
+
+    //   // Slightly blend the dystopian color with the HDR color
+    //   dystopianFogColor.lerp(hdrColor, 0.1); // Only 10% influence from HDR
+
+    //   // Update fog with the dystopian color
+    //   this.scene.fog = new THREE.Fog(dystopianFogColor, 50, 1000);
+
+    //   // Adjust the scene's ambient light to match the dystopian atmosphere
+    //   if (this.ambient) {
+    //     this.ambient.groundColor.copy(dystopianFogColor);
+    //     this.ambient.skyColor.copy(dystopianFogColor).multiplyScalar(1.1); // Slightly brighter sky
+    //     this.ambient.intensity = 0.7; // Reduce overall ambient light intensity
+    //   }
+
+    //   // Adjust the directional light for a more oppressive feel
+    //   if (this.directionalLight) {
+    //     this.directionalLight.intensity = 0.6; // Reduce directional light intensity
+    //     this.directionalLight.color.setHex(0xcccccc); // Slightly warm light color
+    //   }
+
+    //   // Adjust the environment map intensity for a more muted look
+    //   this.scene.environment = hdrTexture;
+    //   this.scene.environment.intensity = 0.5;
     // });
-
-    // const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
-    // this.scene.add(skybox);
-    const rgbeLoader = new RGBELoader();
-    rgbeLoader.load("/overcast_soil_2_4k.hdr", (hdrTexture) => {
-      hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
-      this.scene.environment = hdrTexture;
-      this.scene.environment.intensity = 0.05;
-      this.scene.background = hdrTexture; // Set the HDR as the background
-      //const fogColor = new THREE.Color(0xb0c4de);  // Adjust this color to match your HDR background
-      //this.scene.fog = new THREE.Fog(fogColor, 100, 1000);
-      //this.renderer.toneMappingExposure = 0.5;
-      // Define our dystopian fog color
-      const dystopianFogColor = new THREE.Color(0x4b4b4b); // Medium dark grey
-
-      // Optional: Slightly adjust the fog color based on the HDR
-      const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
-        generateMipmaps: false,
-        type: THREE.HalfFloatType,
-        format: THREE.RGBAFormat,
-      });
-
-      const renderer = this.renderer;
-      const cubeCamera = new THREE.CubeCamera(0.1, 10, renderTarget);
-      cubeCamera.update(renderer, this.scene);
-
-      const pixelBuffer = new Float32Array(4);
-      renderer.readRenderTargetPixels(renderTarget, 0, 0, 1, 1, pixelBuffer);
-
-      const hdrColor = new THREE.Color(
-        Math.pow(pixelBuffer[0], 1 / 2.2),
-        Math.pow(pixelBuffer[1], 1 / 2.2),
-        Math.pow(pixelBuffer[2], 1 / 2.2),
-      );
-
-      // Slightly blend the dystopian color with the HDR color
-      dystopianFogColor.lerp(hdrColor, 0.1); // Only 10% influence from HDR
-
-      // Update fog with the dystopian color
-      this.scene.fog = new THREE.Fog(dystopianFogColor, 50, 1000);
-
-      // Adjust the scene's ambient light to match the dystopian atmosphere
-      if (this.ambient) {
-        this.ambient.groundColor.copy(dystopianFogColor);
-        this.ambient.skyColor.copy(dystopianFogColor).multiplyScalar(1.1); // Slightly brighter sky
-        this.ambient.intensity = 0.7; // Reduce overall ambient light intensity
-      }
-
-      // Adjust the directional light for a more oppressive feel
-      if (this.directionalLight) {
-        this.directionalLight.intensity = 0.6; // Reduce directional light intensity
-        this.directionalLight.color.setHex(0xcccccc); // Slightly warm light color
-      }
-
-      // Adjust the environment map intensity for a more muted look
-      this.scene.environment = hdrTexture;
-      this.scene.environment.intensity = 0.5;
-    });
 
     const geometry = new THREE.PlaneGeometry(
       width,
@@ -674,52 +664,128 @@ class Scene {
     return height;
   }
 
-  placeFencesAlongPerimeter(fence, borderWidth, height, numFences) {
-    const spaceSize = 1900;
-    const halfSpaceSize = spaceSize / 2;
-    const fenceDisplacement = borderWidth / 2; // Displace fences by half their width
+  initializeRainAndLighting() {
+    // Initialize lightning flash
+    this.flash = new THREE.PointLight(0x062d89, 30, 500, 1.7);
+    this.flash.position.set(200, 300, 100);
+    this.scene.add(this.flash);
 
-    // Calculate the spacing between each fence
-    const fenceSpacing = spaceSize / (numFences - 1); // Subtract 1 to include corner fences
+    // Initialize rain geometry
+    this.rainGeo = new THREE.BufferGeometry();
+    const rainPositions = [];
+    this.rainVelocities = [];
+    this.rainCOunt = 10000;
+    
+    for (let i = 0; i < this.rainCount; i++) {
+      rainPositions.push(
+        Math.random() * 1000 - 500,  // x
+        Math.random() * 500 - 250,   // y
+        Math.random() * 1000 - 500   // z
+      );
 
-    // Loop through each side of the space
-    for (let side = 0; side < 4; side++) {
-      for (let i = 0; i < numFences; i++) {
-        // Calculate the position of the current fence
-        let x, z;
-        switch (side) {
-          case 0: // Top side
-            x = fenceSpacing * i - halfSpaceSize;
-            z = -halfSpaceSize - fenceDisplacement;
-            break;
-          case 1: // Right side
-            x = halfSpaceSize + fenceDisplacement;
-            z = fenceSpacing * i - halfSpaceSize;
-            break;
-          case 2: // Bottom side
-            x = halfSpaceSize - fenceSpacing * i;
-            z = halfSpaceSize + fenceDisplacement;
-            break;
-          case 3: // Left side
-            x = -halfSpaceSize - fenceDisplacement;
-            z = halfSpaceSize - fenceSpacing * i;
-            break;
-        }
+      this.rainVelocities.push(0,-Math.random()*0.2-0.1,0);
+      
+      // // Store velocity for each raindrop
+      // this.rainDrops.push({
+      //   velocity: -0.1 - Math.random() * 0.1,
+      //   pos: rainPositions.slice(i * 3, (i * 3) + 3)
+      // });
+    }
 
-        const fencePosition = new THREE.Vector3(x, height, z);
+    this.rainGeo.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(rainPositions, 3)
+    );
 
-        // Clone the fence object to create a new instance
-        const newFence = fence.clone();
+    // Create rain material
+    const rainMaterial = new THREE.PointsMaterial({
+      color: 0xaaaaaa,
+      size: 0.1,
+      transparent: true,
+      opacity: 0.6,
+      depthWrite: false
+    });
 
-        // Set the position of the new fence
-        newFence.position.copy(fencePosition);
+    // Create rain system
+    this.rain = new THREE.Points(this.rainGeo, rainMaterial);
+    this.scene.add(this.rain);
 
-        // Rotate the fence based on the side
-        newFence.rotation.y = (Math.PI / 2) * side;
+   
+    // Load cloud texture and create clouds
+    const loader = new THREE.TextureLoader();
+    loader.load('/textures/smoke.png', (texture) => {
+      const cloudGeo = new THREE.PlaneGeometry(500, 500);
+      const cloudMaterial = new THREE.MeshLambertMaterial({
+        map: texture,
+        transparent: true,
+        opacity: 0.4
+      });
 
-        // Add the new fence to the scene
-        this.scene.add(newFence);
+      this.cloudParticles = [];
+      // Create multiple clouds
+      for (let p = 0; p < 25; p++) {
+        const cloud = new THREE.Mesh(cloudGeo, cloudMaterial);
+        cloud.position.set(
+          Math.random() * 1000 - 500,
+          400,
+          Math.random() * 1000 - 500
+        );
+        cloud.rotation.x = 1.16;
+        cloud.rotation.y = -0.12;
+        cloud.rotation.z = Math.random() * 2 * Math.PI;
+        cloud.material.opacity = 0.6;
+        
+        this.cloudParticles.push(cloud);
+        this.scene.add(cloud);
       }
+    });
+  }
+
+  // animateRain(){
+  //   const rainPositions = this.rainGeo.attributes.position.array;
+
+  //   for (let i = 0; i< rainPositions.length; i+=3){
+  //     rainPositions[i+1] == this .rainVelocities[i+1];
+
+  //     if (rainPositions[i+1] < -250){
+  //       rainPositions[i+1] = 250;
+  //     }
+  //   }
+  //   this.rainGeo.attributes.position.needsUpdate = true;
+  // }
+  updateRainAndLighting() {
+    // Animate clouds
+    this.cloudParticles.forEach(cloud => {
+      cloud.rotation.z -= 0.001;
+    });
+
+    // Update rain positions
+    const positions = this.rainGeo.attributes.position.array;
+    
+    for (let i = 0; i < this.rainCount; i++) {
+      const rainDrop = this.rainDrops[i];
+      
+      // Update Y position with velocity
+      positions[i * 3 + 1] += rainDrop.velocity;
+
+      // Reset raindrop if it falls below certain height
+      if (positions[i * 3 + 1] < -200) {
+        positions[i * 3 + 1] = 200;
+      }
+    }
+    
+    this.rainGeo.attributes.position.needsUpdate = true;
+
+    // Random lightning effect
+    if (Math.random() > 0.93 || this.flash.power > 100) {
+      if (this.flash.power < 100) {
+        this.flash.position.set(
+          Math.random() * 400,
+          300 + Math.random() * 200,
+          100
+        );
+      }
+      this.flash.power = 50 + Math.random() * 500;
     }
   }
   _checkBoundary(position, movement) {
@@ -904,30 +970,44 @@ class Scene {
   }
 
   animate = () => {
-    if (this.gameState.isPaused()){
-       return;} // Stop the loop if paused
+  	if (this.gameState.isPaused()){
+       return;} 
     requestAnimationFrame(this.animate);
+    // if (this.rain && this.flash) {
+    //   this.updateRainAndLighting();
+    // }
     this.updatePlayerMovement();
+
+    const delta = this.clock.getDelta();
+        
+        // Update all zombies
+        this.zombies.forEach(zombie => {
+            zombie.update(delta);
+        });
+        
+        this.renderer.render(this.scene, this.camera);
 
     //render objects
     this.loadMutableObjects();
+   
     this.gameState.updateUI();
     this.renderer.render(this.scene, this.camera);
   };
 
   animate2 = () => {
-    if (this.gameState.isPaused()){
-      return;} 
+  if (this.gameState.isPaused()){
+       return;} 
+       
     requestAnimationFrame(this.animate2); // Fix: Was calling this.animate instead of this.animate2
     
     // Update second camera position to follow main camera from above
     this.secondCamera.position.set(
       this.camera.position.x,
       this.camera.position.y + 50, // Position it 50 units above the player
-      this.camera.position.z
+      this.camera.position.z,
     );
     this.secondCamera.lookAt(this.camera.position); // Look at the player
-    
+
     this.loadMutableObjects();
     this.secondRenderer.render(this.scene, this.secondCamera);
   };

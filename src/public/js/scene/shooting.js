@@ -12,6 +12,14 @@ export class ShootingMechanism {
 
     // Gun position relative to camera
     this.gunOffset = new THREE.Vector3(3, -3.2, -10);
+    this.flashOffset = new THREE.Vector3(3, 0, -10);
+
+    //Flashlight
+    this.flashlight = new THREE.SpotLight(0xffffff, 10, 100, Math.PI/3, 0.8, 4);
+    this.flashlight.position.copy(this.getflashWorldPosition());
+    this.scene.add(this.flashlight);
+    this.scene.add(this.scene.add(this.flashlight.target));
+    this.flashlight.castShadow = true;
 
     // Add crosshair to camera
     this.camera.add(this.crosshair);
@@ -20,6 +28,7 @@ export class ShootingMechanism {
     this.lastShot = 0;
     this.shootingCooldown = 250; // milliseconds
 
+    
     // Animation properties
     this.bulletSpeed = 120; // Units per frame
     this.bulletSize = 0.3; // Size of the bullet block
@@ -39,6 +48,13 @@ export class ShootingMechanism {
   getGunWorldPosition() {
     // Create a vector for the gun's position
     const gunPos = this.gunOffset.clone();
+    // Transform it by the camera's matrix to get world position
+    gunPos.applyMatrix4(this.camera.matrixWorld);
+    return gunPos;
+  }
+  getflashWorldPosition() {
+    // Create a vector for the gun's position
+    const gunPos = this.flashOffset.clone();
     // Transform it by the camera's matrix to get world position
     gunPos.applyMatrix4(this.camera.matrixWorld);
     return gunPos;
@@ -99,6 +115,15 @@ export class ShootingMechanism {
   
     return crosshairGroup;
   }
+
+  updateFlashlight(){
+    const gunPos = this.getflashWorldPosition();
+    this.flashlight.position.copy(gunPos);
+
+    // Set the flashlight's target in front of the gun
+    const targetPosition = gunPos.clone().add(this.camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(10));
+    this.flashlight.target.position.copy(targetPosition);
+  }
   
 
   createBullet(startPosition, targetPosition) {
@@ -133,9 +158,13 @@ export class ShootingMechanism {
   }
 
   animate() {
-    requestAnimationFrame(this.animate);
+      //   if (this.gameState.isPaused()){
+      // return;} // Stop the loop if paused
 
+    requestAnimationFrame(this.animate);
+    this.updateFlashlight();
     const currentTime = Date.now();
+
 
     // Update each projectile independently
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
@@ -292,8 +321,6 @@ export class ShootingMechanism {
     this.projectiles = [];
   }
 }
-
-
 
 
 

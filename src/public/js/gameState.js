@@ -9,6 +9,7 @@ class GameState {
     this.maxStamina = 100;
     this.isPlayerSprinting = false;
     this.world = world;
+    this.scene = world.scene;
     
     //pausing
     this.paused = false;
@@ -258,8 +259,11 @@ class GameState {
     this.paused = !this.paused; // Toggle the pause state
     if (this.paused) {
       console.log("Game is now paused.");
+      // this.scene.mouseControls = false;
+      // document.exitPointerLock();
     } else {
       console.log("Game is now resumed.");
+      this.scene.mouseControls = true; 
       // this.scene.animate();  // Resume the game loop when unpausing
       this.world.animate();  // Resume the game loop when unpausing
       this.updateUI();
