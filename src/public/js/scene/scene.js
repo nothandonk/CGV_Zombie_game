@@ -18,8 +18,8 @@ class Scene {
 
     this.clock = new THREE.Clock();
 
-    // const initialFogColor = 0x4b4b4b; // A medium dark grey
-    // this.scene.fog = new THREE.Fog(initialFogColor, 50, 1000);
+    const initialFogColor = 0x4b4b4b; // A medium dark grey
+    //this.scene.fog = new THREE.Fog(initialFogColor, 50, 1000);
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.mouseSensitivity = 0.002;
@@ -102,14 +102,27 @@ class Scene {
 
     this.ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
     this.scene.add(this.ambient);
-
-    this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    this.directionalLight.position.set(50, 50, 50);
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
+    this.directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    this.directionalLight.position.set(500, 1000, 0);
+    this.directionalLight.castShadow = true;
+    this.directionalLight.shadow.mapSize.width = 4096; // Larger shadow map
+    this.directionalLight.shadow.mapSize.height = 4096;
+    const d = 1000;
+    this.directionalLight.shadow.camera.left = - d;
+    this.directionalLight.shadow.camera.right = d;
+    this.directionalLight.shadow.camera.top = d;
+    this.directionalLight.shadow.camera.bottom = - d;
+    this.directionalLight.shadow.camera.near = 1;
+    this.directionalLight.shadow.camera.far = 5000;
+    this.directionalLight.shadow.bias = -0.001;
+    this.directionalLight.shadow.normalBias = 0.02;
+    this.scene.add(new THREE.CameraHelper(this.directionalLight.shadow.camera))
     this.scene.add(this.directionalLight);
 
-    //blue fog
-    // this.scene.fog = new THREE.FogExp2(0x11111f,0.002);
-    // this.renderer.setClearColor(this.scene.fog.color);
+   // this.scene.fog = new THREE.FogExp2(0x11111f,0.002);
+    //this.renderer.setClearColor(this.scene.fog.color);
 
     // Add world axes helper
     const worldAxesHelper = new THREE.AxesHelper(50);
@@ -203,25 +216,26 @@ class Scene {
   }
 
   async init() {
-    //this.initializeRainAndLighting();
+    ////this.initializeRainAndLighting();
     
     
 
     this.generateTerrain();
     this.positionCameraAboveTerrain();
+    // this.addZombie();
 
     this.loadImmutableObjects();
 
  
     // this.loadBuildings();
     // this.loadGravestones();
-    // this.loadTower();
+   // // this.loadTower();
     // this.loadGarage();
     // this.loadBodybag();
     // this.loadShakaZulu();
     // this.loadHospital();
     // this.loadBuild();
-  
+   // this.loadCone();
     // this.loadcar();
     // this.loadHospital();
     // this.loadTombstone();
@@ -234,6 +248,7 @@ class Scene {
     this.animate();
     this.animate2();
     this.animateRain();
+    
   }
 
 
@@ -251,6 +266,8 @@ class Scene {
       this.scene.add(scene);
 
       const boundingBox = new THREE.Box3().setFromObject(scene);
+      const box = new THREE.Box3().setFromObject(this.scene); // Create a bounding box for the whole scene
+      console.log("Scene size:", box.getSize(new THREE.Vector3())); // Log the width, height, depth of the scene
 
       // Add the tower and its bounding box to the objects to check for collision
       this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
@@ -264,6 +281,12 @@ class Scene {
       fact.scale.set(25, 25, 25);
       fact.position.set(-600, -5, 0);
       fact.rotation.y = Math.PI / 2;
+      fact.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
       this.scene.add(fact);
 
       const boundingBox = new THREE.Box3().setFromObject(fact);
@@ -272,14 +295,35 @@ class Scene {
       this.objectsToCheck.push({ object: fact, boundingBox: boundingBox });
     });
   }
-  
+  loadCone() {
+    const cylinder = new THREE.Mesh(
+        new THREE.CylinderGeometry(2, 2, 10, 64), // Increased radius and height
+        new THREE.MeshPhongMaterial({ color: 0x3ea34c })
+    );
+    cylinder.position.set(0, 5, 0); // Position centered in scene
+    cylinder.receiveShadow = true;
+    cylinder.castShadow = true;
+    this.scene.add(cylinder); // Add directly to the scene like in loadBuildings()
+
+    // Optionally, if you want collision detection for the cone:
+    const boundingBox = new THREE.Box3().setFromObject(cylinder);
+    this.objectsToCheck.push({ object: cylinder, boundingBox: boundingBox });
+}
   loadcar() {
     const gltfLoader = new GLTFLoader();
     let scene;
     gltfLoader.load("/old_car_wreck.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(0.4, 0.4, 0.4); // Adjust scale if needed
-      scene.position.set(-90, 0, 200); // Position thxv
+      scene.position.set(-90, -1, 200); // Position thxv
+
+      scene.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
       this.scene.add(scene);
       const boundingBox = new THREE.Box3().setFromObject(scene);
       this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
@@ -289,6 +333,7 @@ class Scene {
   spawnZombie(position, type) {
     const zombie = new Zombie(this, position, type);
     this.zombies.push(zombie);
+    
     return zombie;
 }
 
@@ -352,6 +397,12 @@ class Scene {
       scene.scale.set(70, 100, 100); // Adjust scale if needed
       scene.position.set(0, 0, 0); // Position th
       scene.rotation.y = Math.PI / 2;
+      scene.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
       this.scene.add(scene);
 
       //const boundingBox = new THREE.Box3().setFromObject(scene);
@@ -565,6 +616,7 @@ class Scene {
 
     this.groundMesh = new THREE.Mesh(geometry, material);
     this.groundMesh.rotation.x = -Math.PI / 2;
+    this.groundMesh.receiveShadow = true;
     this.scene.add(this.groundMesh);
 
     // Load FBX model
@@ -914,6 +966,7 @@ class Scene {
     }
     return false; // No collision
   }
+  
 }
 
 export default Scene;
