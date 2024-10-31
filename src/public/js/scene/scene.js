@@ -18,8 +18,8 @@ class Scene {
 
     this.clock = new THREE.Clock();
 
-    const initialFogColor = 0x4b4b4b; // A medium dark grey
-    this.scene.fog = new THREE.Fog(initialFogColor, 50, 1000);
+    // const initialFogColor = 0x4b4b4b; // A medium dark grey
+    // this.scene.fog = new THREE.Fog(initialFogColor, 50, 1000);
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.mouseSensitivity = 0.002;
@@ -107,8 +107,9 @@ class Scene {
     this.directionalLight.position.set(50, 50, 50);
     this.scene.add(this.directionalLight);
 
-    this.scene.fog = new THREE.FogExp2(0x11111f,0.002);
-    this.renderer.setClearColor(this.scene.fog.color);
+    //blue fog
+    // this.scene.fog = new THREE.FogExp2(0x11111f,0.002);
+    // this.renderer.setClearColor(this.scene.fog.color);
 
     // Add world axes helper
     const worldAxesHelper = new THREE.AxesHelper(50);
@@ -179,37 +180,53 @@ class Scene {
       "keyup",
       (e) => (this.keysPressed[e.key.toLowerCase()] = false),
     );
-
+    const skyboxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
+    const skybox = new THREE.Mesh(skyboxGeo);
+    this.scene.add(skybox);
+    this.skybox = skybox;
     // Prevent context menu on right click
     // this.renderer.domElement.addEventListener("contextmenu", (e) =>
     //   e.preventDefault(),
     // );
   }
 
+  createPathStrings(filename) {
+    const basePath = "./skybox/";
+    const baseFilename = basePath + filename;
+    const fileType = ".png";
+    const sides = ["ft", "bk", "up", "dn", "rt", "lf"];
+    const pathStings = sides.map(side => {
+      return baseFilename + "_" + side + fileType;
+    });
+  
+    return pathStings;
+  }
+
   async init() {
-    this.initializeRainAndLighting();
+    //this.initializeRainAndLighting();
+    
+    
+
     this.generateTerrain();
     this.positionCameraAboveTerrain();
-    // this.addZombie();
 
     this.loadImmutableObjects();
 
-    // this.loadPlayer();
-    // this.addWall();
-    this.loadBuildings();
-    this.loadGravestones();
-    this.loadTower();
-    this.loadGarage();
-    this.loadBodybag();
-    this.loadShakaZulu();
-    this.loadHospital();
-    this.loadBuild();
+ 
+    // this.loadBuildings();
+    // this.loadGravestones();
+    // this.loadTower();
+    // this.loadGarage();
+    // this.loadBodybag();
+    // this.loadShakaZulu();
+    // this.loadHospital();
+    // this.loadBuild();
   
-    this.loadcar();
-    this.loadHospital();
-    this.loadTombstone();
-    this.loadTombstoneTwo();
-    this.loadWall();
+    // this.loadcar();
+    // this.loadHospital();
+    // this.loadTombstone();
+    // this.loadTombstoneTwo();
+    // this.loadWall();
     //this.loadZombie();
  
     this.gameState.startNewWave();
@@ -218,6 +235,11 @@ class Scene {
     this.animate2();
     this.animateRain();
   }
+
+
+
+
+
 
   loadBuildings() {
     const gltfLoader = new GLTFLoader();
@@ -422,35 +444,13 @@ class Scene {
     );
   }
 
-  addWall() {
-    const wallWidth = 2000; // Width of the wall
-    const wallHeight = 100; // Height of the wall
-    const wallDepth = 1; // Depth of the wall (thickness)
+  loadRain(){
+    const rainGeometry = new THREE.CylinderGeometry(1,1,1,4,1,true);
+    let oldRainGeometryScale = 1;
 
-    // Create wall geometry
-    const wallGeometry = new THREE.BoxGeometry(
-      wallWidth,
-      wallHeight,
-      wallDepth,
-    );
-
-    // Load the texture
-    const textureLoader = new THREE.TextureLoader();
-    const wallTexture = textureLoader.load("worn_brick_floor_diff_2k.jpg"); // Replace with the path to your texture
-    wallTexture.wrapS = THREE.RepeatWrapping;
-    wallTexture.wrapT = THREE.RepeatWrapping;
-    wallTexture.repeat.set(5, 5);
-    // Create the material with the texture
-    const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture });
-
-    // Create the wall mesh
-    const wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
-
-    // Position the wall across the X-axis at y = 0
-    wallMesh.position.set(0, 0, 0); // Center it vertically at y = 0
-    //wallMesh.rotation.x = Math.PI / 2;
-    // Add the wall to the scene
-    this.scene.add(wallMesh);
+    const rainMaterial = extendMaterial(THREE.MeshLambertMaterial,{
+      class: THREE.ShaderMaterial,
+    })
   }
 
   generateTerrain() {
@@ -468,6 +468,7 @@ class Scene {
     // //   side: THREE.BackSide,
     // //   transparent: true,
     // // });
+   
 
     // // const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
     // // this.scene.add(skybox);
@@ -644,52 +645,7 @@ class Scene {
   }
 
   initializeRainAndLighting() {
-    // Initialize lightning flash
-    this.flash = new THREE.PointLight(0x062d89, 30, 500, 1.7);
-    this.flash.position.set(200, 300, 100);
-    this.scene.add(this.flash);
-
-    // Initialize rain geometry
-    this.rainGeo = new THREE.BufferGeometry();
-    const rainPositions = [];
-    this.rainVelocities = [];
-    this.rainCOunt = 10000;
-    
-    for (let i = 0; i < this.rainCount; i++) {
-      rainPositions.push(
-        Math.random() * 1000 - 500,  // x
-        Math.random() * 500 - 250,   // y
-        Math.random() * 1000 - 500   // z
-      );
-
-      this.rainVelocities.push(0,-Math.random()*0.2-0.1,0);
       
-      // // Store velocity for each raindrop
-      // this.rainDrops.push({
-      //   velocity: -0.1 - Math.random() * 0.1,
-      //   pos: rainPositions.slice(i * 3, (i * 3) + 3)
-      // });
-    }
-
-    this.rainGeo.setAttribute(
-      'position',
-      new THREE.Float32BufferAttribute(rainPositions, 3)
-    );
-
-    // Create rain material
-    const rainMaterial = new THREE.PointsMaterial({
-      color: 0xaaaaaa,
-      size: 0.1,
-      transparent: true,
-      opacity: 0.6,
-      depthWrite: false
-    });
-
-    // Create rain system
-    this.rain = new THREE.Points(this.rainGeo, rainMaterial);
-    this.scene.add(this.rain);
-
-   
     // Load cloud texture and create clouds
     const loader = new THREE.TextureLoader();
     loader.load('/textures/smoke.png', (texture) => {
@@ -720,52 +676,13 @@ class Scene {
     });
   }
 
-  // animateRain(){
-  //   const rainPositions = this.rainGeo.attributes.position.array;
-
-  //   for (let i = 0; i< rainPositions.length; i+=3){
-  //     rainPositions[i+1] == this .rainVelocities[i+1];
-
-  //     if (rainPositions[i+1] < -250){
-  //       rainPositions[i+1] = 250;
-  //     }
-  //   }
-  //   this.rainGeo.attributes.position.needsUpdate = true;
-  // }
   updateRainAndLighting() {
     // Animate clouds
     this.cloudParticles.forEach(cloud => {
       cloud.rotation.z -= 0.001;
     });
 
-    // Update rain positions
-    const positions = this.rainGeo.attributes.position.array;
     
-    for (let i = 0; i < this.rainCount; i++) {
-      const rainDrop = this.rainDrops[i];
-      
-      // Update Y position with velocity
-      positions[i * 3 + 1] += rainDrop.velocity;
-
-      // Reset raindrop if it falls below certain height
-      if (positions[i * 3 + 1] < -200) {
-        positions[i * 3 + 1] = 200;
-      }
-    }
-    
-    this.rainGeo.attributes.position.needsUpdate = true;
-
-    // Random lightning effect
-    if (Math.random() > 0.93 || this.flash.power > 100) {
-      if (this.flash.power < 100) {
-        this.flash.position.set(
-          Math.random() * 400,
-          300 + Math.random() * 200,
-          100
-        );
-      }
-      this.flash.power = 50 + Math.random() * 500;
-    }
   }
   _checkBoundary(position, movement) {
     //check each basis to see if we are about to go beyond bounds
@@ -949,6 +866,9 @@ class Scene {
   }
 
   animate = () => {
+    
+    this.skybox.rotation.x += 0.005;
+    this.skybox.rotation.y += 0.005;
     requestAnimationFrame(this.animate);
     // if (this.rain && this.flash) {
     //   this.updateRainAndLighting();
