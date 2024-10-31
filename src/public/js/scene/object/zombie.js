@@ -1,10 +1,14 @@
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
+import GameState from "../../gameState.js";
+
+
 
 class Zombie {
   constructor(scene, camera, otherObjects, world) {
     this.scene = scene;
     this.world = world;
+    this.gameState = world.gameState;
     this.camera = camera;
     this.otherObjects = otherObjects;
     this.loader = new GLTFLoader();
@@ -161,6 +165,9 @@ class Zombie {
   }
 
   update() {
+    if (this.gameState.isPaused()){
+      return;} // Stop the loop if paused
+
     if (this.model) {
       const terrainHeight = this.world.getTerrainHeight(
         this.model.position.x,
@@ -240,9 +247,13 @@ class Zombie {
   }
 
   animate() {
+    // if (this.gameState.isPaused()){
+    //   return;} // Stop the loop if paused
+
     requestAnimationFrame(() => this.animate());
     this.update();
   }
 }
 
 export default Zombie;
+
