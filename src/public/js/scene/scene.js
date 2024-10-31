@@ -68,9 +68,12 @@ class Scene {
 
     const secondview = document.getElementById("Second_view");
     this.secondRenderer = new THREE.WebGLRenderer();
-    this.secondRenderer.setSize(secondview.offsetWidth, secondview.offsetHeight);
+    this.secondRenderer.setSize(
+      secondview.offsetWidth,
+      secondview.offsetHeight,
+    );
     secondview.appendChild(this.secondRenderer.domElement);
-   
+
     // this.secondCamera = new THREE.PerspectiveCamera(
     //   90,
     //   secondview.offsetWidth/secondview.offsetHeight,
@@ -79,12 +82,12 @@ class Scene {
     // );
 
     this.secondCamera = new THREE.OrthographicCamera(
-      secondview.offsetWidth/-2,
-      secondview.offsetWidth/2,
-      secondview.offsetHeight/2,
-      secondview.offsetHeight/-2,
+      secondview.offsetWidth / -2,
+      secondview.offsetWidth / 2,
+      secondview.offsetHeight / 2,
+      secondview.offsetHeight / -2,
       1,
-      1000
+      1000,
     );
 
     this.secondCamera.position.set(0, 3000, 0);
@@ -93,9 +96,6 @@ class Scene {
     this.secondCamera.rotation.z = Math.PI;
     this.secondCamera.logarithmicDepthBuffer = true;
 
-
-
-  
     // Set up lights
     //this.ambientLight = new THREE.AmbientLight(0x404040);
     //this.scene.add(this.ambientLight);
@@ -206,10 +206,7 @@ class Scene {
     this.loadHospital();
     //this.loadAmbulance();
     //this.loadZombie();
-    this.spawnZombie({ x: -150, y: 0, z: -150 });
-    this.spawnZombie({ x: 50, y: 0, z: 50 });
-    this.spawnZombie({ x: 150, y: 0, z: 150 });
-    this.spawnZombie({ x: 250, y: 0, z: 250 });
+ 
     this.gameState.startNewWave();
 
     this.animate();
@@ -875,15 +872,15 @@ class Scene {
 
   animate2 = () => {
     requestAnimationFrame(this.animate2); // Fix: Was calling this.animate instead of this.animate2
-    
+
     // Update second camera position to follow main camera from above
     this.secondCamera.position.set(
       this.camera.position.x,
       this.camera.position.y + 50, // Position it 50 units above the player
-      this.camera.position.z
+      this.camera.position.z,
     );
     this.secondCamera.lookAt(this.camera.position); // Look at the player
-    
+
     this.loadMutableObjects();
     this.secondRenderer.render(this.scene, this.secondCamera);
   };

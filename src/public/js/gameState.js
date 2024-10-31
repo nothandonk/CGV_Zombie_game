@@ -11,7 +11,7 @@ class GameState {
     this.world = world;
 
     // Wave management
-    this.currentWave = 1;
+    this.currentWave = 0;
     this.zombiesRemainingInWave = 0;
     this.zombiesPerWave = 10;
     this.killCount = 0;
@@ -27,8 +27,15 @@ class GameState {
     this.killCounter = document.getElementById("killCounter");
     this.gameOverScreen = document.getElementById("game-over-overlay");
     this.finalScore = document.getElementById("score");
-    this.waveCompleteScreen = document.getElementById("waveCompleteScreen");
-    this.nextWaveButton = document.getElementById("nextWaveButton");
+    this.waveCompleteScreen = document.getElementById(
+      "level-completed-overlay",
+    );
+    this.nextWaveButton = document.getElementById("next-level-button");
+
+    this.nextWaveButton.addEventListener("click", () => {
+      this.waveCompleteScreen.style.display = "none";
+      this.startNewWave();
+    });
 
     // Initial UI update
     this.updateUI();
@@ -170,6 +177,10 @@ class GameState {
     this.isPlayerSprinting = isSprinting && this.canSprint();
   }
 
+  _getRandomNumber() {
+    return Math.floor(Math.random() * 4001) - 2000;
+  }
+
   startNewWave() {
     this.currentWave++;
     this.zombiesRemainingInWave =
@@ -177,7 +188,14 @@ class GameState {
     if (this.waveCompleteScreen) {
       this.waveCompleteScreen.style.display = "none";
     }
-    this.updateUI();
+
+    
+
+    for (let i = 0; i < this.zombiesRemainingInWave; i++){
+
+      this.world.spawnZombie({ x: this._getRandomNumber(), y: 0, z: this._getRandomNumber() });
+    }
+   this.world.updateUI();
   }
 
   killZombie(zombie) {
