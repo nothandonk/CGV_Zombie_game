@@ -2,9 +2,9 @@ import { GLTFObject } from "./scene/object/object.js";
 import Scene from "./scene/scene.js";
 
 document.addEventListener("DOMContentLoaded", async function () {
-  const world = new Scene();
+  // const world = new Scene();
 
-  world.init();
+  // world.init();
 
   //game loop
 
@@ -18,15 +18,15 @@ document.addEventListener("DOMContentLoaded", async function () {
   //   true,
   // );
 
-  const gun = new GLTFObject(
-    "/new_gun.glb",
-    [3, -3.2, -8.5],
-    [0, Math.PI, 0],
-    [0.1, 0.1, 0.1],
-    world,
-    true,
-    true,
-  );
+  // const gun = new GLTFObject(
+  //   "/new_gun.glb",
+  //   [3, -3.2, -8.5],
+  //   [0, Math.PI, 0],
+  //   [0.1, 0.1, 0.1],
+  //   world,
+  //   true,
+  //   true,
+  // );
 
-  world.animate();
+  // world.animate();
 });

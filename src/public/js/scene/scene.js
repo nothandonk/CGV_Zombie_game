@@ -97,16 +97,17 @@ class Scene {
     this.secondCamera.logarithmicDepthBuffer = true;
 
     // Set up lights
-    //this.ambientLight = new THREE.AmbientLight(0x404040);
-    //this.scene.add(this.ambientLight);
+    // this.ambientLight = new THREE.AmbientLight(0x404040);
+    // this.scene.add(this.ambientLight);
 
     this.ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
     this.scene.add(this.ambient);
 
-    this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    this.directionalLight.position.set(50, 50, 50);
-    this.scene.add(this.directionalLight);
+    // this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    // this.directionalLight.position.set(50, 50, 50);
+    // this.scene.add(this.directionalLight);
 
+   
     this.scene.fog = new THREE.FogExp2(0x11111f,0.002);
     this.renderer.setClearColor(this.scene.fog.color);
 
