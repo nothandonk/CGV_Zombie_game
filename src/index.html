@@ -604,6 +604,18 @@
       window.addEventListener("resize", resizeCanvas);
       resizeCanvas();
 
+          // //skybox
+    const textureLoader = new THREE.TextureLoader();
+    const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
+    const skyboxMaterial = new THREE.MeshBasicMaterial({
+      map: textureLoader.load("/skybox/overcast.png"),
+      side: THREE.BackSide,
+      transparent: true,
+    });
+    const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+
+    scene.add(skybox)
+
       // Add some basic animation elements
       const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
       const material = new THREE.MeshPhongMaterial({
@@ -663,7 +675,7 @@
       directionalLight.position.set(0, -3, 26);
       scene.add(directionalLight);
 
-      const ambientLight = new THREE.AmbientLight(0x404040);
+      const ambientLight = new THREE.AmbientLight(0xffffff);
       scene.add(ambientLight);
 
       camera.position.z = 30;
