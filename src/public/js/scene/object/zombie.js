@@ -256,3 +256,4 @@ class Zombie {
 }
 
 export default Zombie;
+
