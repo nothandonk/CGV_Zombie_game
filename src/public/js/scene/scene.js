@@ -6,20 +6,21 @@ import Zombie from "./object/zombie.js";
 import MiniMap from "../hud/minimap.js";
 import { ShootingMechanism } from "./shooting.js";
 import GameState from "../gameState.js";
+import { Sky } from 'three/addons/objects/Sky.js';
 
 class Scene {
   constructor() {
     this.scene = new THREE.Scene();
-    // const fogColor = 0xcccccc;  // Light gray color
-    // const fogNear = 10;  // Distance at which the fog starts
-    // const fogFar = 1000;  // Distance at which the fog is fully opaque
-    // this.scene.fog = new THREE.Fog(fogColor, fogNear, fogFar);
+     const fogColor = 0xcccccc;  // Light gray color
+     const fogNear = 10;  // Distance at which the fog starts
+     const fogFar = 1000;  // Distance at which the fog is fully opaque
+     this.scene.fog = new THREE.Fog(fogColor, fogNear, fogFar);
     this.gameState = new GameState(this);
 
     this.clock = new THREE.Clock();
 
     const initialFogColor = 0x4b4b4b; // A medium dark grey
-    //this.scene.fog = new THREE.Fog(initialFogColor, 50, 1000);
+    this.scene.fog = new THREE.Fog(initialFogColor, 50, 1000);
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.mouseSensitivity = 0.002;
@@ -105,7 +106,7 @@ class Scene {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    this.directionalLight.position.set(500, 1000, 0);
+    this.directionalLight.position.set(0, 10, 505);
     this.directionalLight.castShadow = true;
     this.directionalLight.shadow.mapSize.width = 4096; // Larger shadow map
     this.directionalLight.shadow.mapSize.height = 4096;
@@ -121,8 +122,8 @@ class Scene {
     this.scene.add(new THREE.CameraHelper(this.directionalLight.shadow.camera))
     this.scene.add(this.directionalLight);
 
-   // this.scene.fog = new THREE.FogExp2(0x11111f,0.002);
-    //this.renderer.setClearColor(this.scene.fog.color);
+    this.scene.fog = new THREE.FogExp2(0x11111f,0.002);
+    this.renderer.setClearColor(this.scene.fog.color);
 
     // Add world axes helper
     const worldAxesHelper = new THREE.AxesHelper(50);
@@ -248,7 +249,7 @@ class Scene {
     this.animate();
     this.animate2();
     this.animateRain();
-    
+    //this.initSky();
   }
 
 
@@ -428,7 +429,7 @@ class Scene {
     const gltfLoader = new GLTFLoader();
     let bodybag = new GLTFObject(
       "/gas_station.glb",
-      [-800, 0, -800],
+      [-800, -10, -800],
       [0, Math.PI, 0],
       [15, 15, 15],
       this,
@@ -503,7 +504,48 @@ class Scene {
       class: THREE.ShaderMaterial,
     })
   }
+  // initSky() {
+  //   this.sky = new Sky();
+  //   this.sky.scale.setScalar(2000);
+  //   this.sky.material.uniforms['turbidity'].value = 10;
+  //   this.sky.material.uniforms['rayleigh'].value = 3;
+  //   this.sky.material.uniforms['mieCoefficient'].value = 0.08;
+  //   this.sky.material.uniforms['mieDirectionalG'].value = 0.8;
+  
+  //   this.sunPosition = new THREE.Vector3();
+  //   this.sky.material.uniforms['sunPosition'].value.copy(this.sunPosition);
+  //   this.scene.add(this.sky);
+  //   this.directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+  //   this.directionalLight.castShadow = true;
+  //   this.directionalLight.position.set(0, 10, 500); // Initial position for sunrise
+  //   this.scene.add(this.directionalLight);
+  //   // Begin the animation for sunrise to sunset
+  //   this.createSunAnimation();
+  // }
+  
+  // createSunAnimation() {
+  //   const duration = 100000; // Duration for a full sunrise-to-sunset cycle in ms
+  //   const radius = 2000; // Radius of sun path
+  //   const height = 1000; // Height at which sun moves
 
+  //   const animateSun = () => {
+  //       const elapsed = (Date.now() % duration) / duration; // Cycle through 0 to 1
+  //       const angle = Math.PI * elapsed; // Map to sunrise-to-sunset angle range
+
+  //       // Calculate x, y, z positions for the sun’s arc
+  //       const x = radius * Math.cos(angle);
+  //       const z = radius * Math.sin(angle);
+  //       const y = height * Math.sin(angle); // Adds a slight arc effect
+
+  //       // Update directional light and sky sun position
+  //       this.directionalLight.position.set(x, y, z);
+  //       this.sky.material.uniforms['sunPosition'].value.copy(this.directionalLight.position);
+
+  //       requestAnimationFrame(animateSun);
+  //   };
+
+  //   animateSun(); // Start the animation
+  // } 
   generateTerrain() {
     const noise = new Noise(Math.random());
     const width = 2000;
@@ -525,78 +567,35 @@ class Scene {
     // this.scene.add(skybox);
 
     //SkyDome
-    const textureLoader = new THREE.TextureLoader();
-    const cloudTexture = textureLoader.load("http://localhost:3000/skybox/overcast.png"); // Path to your cloud texture
+     const textureLoader = new THREE.TextureLoader();
+  //   const cloudTexture = textureLoader.load("http://localhost:3000/skybox/overcast.png"); // Path to your cloud texture
     
-    // Create a hemisphere geometry
-    const skyDomeGeometry = new THREE.SphereGeometry(width, depth, depth, 0, Math.PI * 2, 0, Math.PI / 2);
-    const skyDomeMaterial = new THREE.MeshBasicMaterial({
-        map: cloudTexture,
-        side: THREE.BackSide, // Render the inside of the dome
-        transparent: true,
-    });
+  //   // Create a hemisphere geometry
+  //   const skyDomeGeometry = new THREE.SphereGeometry(width, depth, depth, 0, Math.PI * 2, 0, Math.PI / 2);
+  //   const skyDomeMaterial = new THREE.MeshBasicMaterial({
+  //       map: cloudTexture,
+  //       side: THREE.BackSide, // Render the inside of the dome
+  //       transparent: true,
+  //   });
     
-    const skyDome = new THREE.Mesh(skyDomeGeometry, skyDomeMaterial);
-   // skyDome.position.set(0, 2000, 0); // Position it high above the scene
+  //   const skyDome = new THREE.Mesh(skyDomeGeometry, skyDomeMaterial);
+  //  // skyDome.position.set(0, 2000, 0); // Position it high above the scene
     
-    this.scene.add(skyDome);
-    
+  //   this.scene.add(skyDome);
 
-    // const rgbeLoader = new RGBELoader();
-    // rgbeLoader.load("/overcast_soil_2_4k.hdr", (hdrTexture) => {
-    //   hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
-    //   this.scene.environment = hdrTexture;
-    //   this.scene.environment.intensity = 0.05;
-    //   this.scene.background = hdrTexture; // Set the HDR as the background
-    //   //const fogColor = new THREE.Color(0xb0c4de);  // Adjust this color to match your HDR background
-    //   //this.scene.fog = new THREE.Fog(fogColor, 100, 1000);
-    //   //this.renderer.toneMappingExposure = 0.5;
-    //   // Define our dystopian fog color
-    //   const dystopianFogColor = new THREE.Color(0x4b4b4b); // Medium dark grey
+  // Sky setup using Sky.js
+  const sky = new Sky();
+  sky.scale.setScalar(2000);
+  sky.material.uniforms['turbidity'].value = 10;
+    sky.material.uniforms['rayleigh'].value = 3;
+    sky.material.uniforms['mieCoefficient'].value = 0.08;
+    sky.material.uniforms['mieDirectionalG'].value = 0.8;
 
-    //   // Optional: Slightly adjust the fog color based on the HDR
-    //   const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
-    //     generateMipmaps: false,
-    //     type: THREE.HalfFloatType,
-    //     format: THREE.RGBAFormat,
-    //   });
-
-    //   const renderer = this.renderer;
-    //   const cubeCamera = new THREE.CubeCamera(0.1, 10, renderTarget);
-    //   cubeCamera.update(renderer, this.scene);
-
-    //   const pixelBuffer = new Float32Array(4);
-    //   renderer.readRenderTargetPixels(renderTarget, 0, 0, 1, 1, pixelBuffer);
-
-    //   const hdrColor = new THREE.Color(
-    //     Math.pow(pixelBuffer[0], 1 / 2.2),
-    //     Math.pow(pixelBuffer[1], 1 / 2.2),
-    //     Math.pow(pixelBuffer[2], 1 / 2.2),
-    //   );
-
-    //   // Slightly blend the dystopian color with the HDR color
-    //   dystopianFogColor.lerp(hdrColor, 0.1); // Only 10% influence from HDR
-
-    //   // Update fog with the dystopian color
-    //   this.scene.fog = new THREE.Fog(dystopianFogColor, 50, 1000);
-
-    //   // Adjust the scene's ambient light to match the dystopian atmosphere
-    //   if (this.ambient) {
-    //     this.ambient.groundColor.copy(dystopianFogColor);
-    //     this.ambient.skyColor.copy(dystopianFogColor).multiplyScalar(1.1); // Slightly brighter sky
-    //     this.ambient.intensity = 0.7; // Reduce overall ambient light intensity
-    //   }
-
-    //   // Adjust the directional light for a more oppressive feel
-    //   if (this.directionalLight) {
-    //     this.directionalLight.intensity = 0.6; // Reduce directional light intensity
-    //     this.directionalLight.color.setHex(0xcccccc); // Slightly warm light color
-    //   }
-
-    //   // Adjust the environment map intensity for a more muted look
-    //   this.scene.environment = hdrTexture;
-    //   this.scene.environment.intensity = 0.5;
-    // });
+    const sun = new THREE.Vector3();
+    sun.copy(this.directionalLight.position);
+    sky.material.uniforms[ 'sunPosition' ].value.copy( sun );
+    sky.visible = true;
+this.scene.add(sky);
 
     const geometry = new THREE.PlaneGeometry(
       width,
@@ -638,36 +637,7 @@ class Scene {
     this.groundMesh.receiveShadow = true;
     this.scene.add(this.groundMesh);
 
-    // Load FBX model
-    // const loader = new GLTFLoader();
-    // loader.load(
-    //   "/textures/stone_floor.glb",
-    //   (gltf) => {
-    //     const tile = gltf.scene;
-    //     tile.scale.set(1, 1, 1); // Scale the tile to fit the ground if necessary
-
-    //     const tileSize = 1; // Adjust based on your GLB model's size
-    //     const tilesPerRow = Math.ceil(width / tileSize);
-    //     const tilesPerColumn = Math.ceil(width / tileSize);
-
-    //     // Duplicate and position the tiles in a grid to cover the ground
-    //     for (let i = 0; i < tilesPerRow; i++) {
-    //       for (let j = 0; j < tilesPerColumn; j++) {
-    //         const tileClone = tile.clone(); // Clone the tile for each position
-    //         tileClone.position.set(
-    //           i * tileSize - width / 2 + tileSize / 2,
-    //           0,
-    //           j * tileSize - width / 2 + tileSize / 2,
-    //         );
-    //         this.scene.add(tileClone);
-    //       }
-    //     }
-    //   },
-    //   undefined,
-    //   function (error) {
-    //     console.error("An error occurred while loading the GLB model:", error);
-    //   },
-    // );
+    
   }
 
   getTerrainHeight(x, z) {
