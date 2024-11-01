@@ -34,7 +34,7 @@ class GameState {
 
     this.nextWaveButton.addEventListener("click", () => {
       this.waveCompleteScreen.style.display = "none";
-      this.startNewWave();
+      this.world.startChapterLoading();
     });
 
     // Initial UI update
@@ -189,13 +189,14 @@ class GameState {
       this.waveCompleteScreen.style.display = "none";
     }
 
-    
-
-    for (let i = 0; i < this.zombiesRemainingInWave; i++){
-
-      this.world.spawnZombie({ x: this._getRandomNumber(), y: 0, z: this._getRandomNumber() });
+    for (let i = 0; i < this.zombiesRemainingInWave; i++) {
+      this.world.spawnZombie({
+        x: this._getRandomNumber(),
+        y: 0,
+        z: this._getRandomNumber(),
+      });
     }
-   this.world.updateUI();
+    this.updateUI();
   }
 
   killZombie(zombie) {
@@ -207,6 +208,7 @@ class GameState {
       if (this.zombiesRemainingInWave === 0) {
         if (this.waveCompleteScreen) {
           this.waveCompleteScreen.style.display = "flex";
+          this.world.this.currentChapter++;
         }
         return "wave_complete";
       }

@@ -107,8 +107,7 @@ class Scene {
     // this.directionalLight.position.set(50, 50, 50);
     // this.scene.add(this.directionalLight);
 
-   
-    this.scene.fog = new THREE.FogExp2(0x11111f,0.002);
+    this.scene.fog = new THREE.FogExp2(0x11111f, 0.002);
     this.renderer.setClearColor(this.scene.fog.color);
 
     // Add world axes helper
@@ -146,6 +145,12 @@ class Scene {
     this.playerBoundingBox = new THREE.Box3();
 
     this.shooter = new ShootingMechanism(this);
+    this.totalGameAssets = 0;
+    this.loadedGameAssets = 0;
+    this.loadingProgress = document.getElementById("loading-progress");
+    this.chapters = document.querySelectorAll(".loading-screen");
+    this.mainMenu = document.getElementById("start-menu");
+    this.currentChapter = 0;
   }
 
   onMouseMove(event) {
@@ -188,35 +193,26 @@ class Scene {
   }
 
   async init() {
+    //this needs to load after world has loaded for some reasons idk
+    this.startChapterLoading();
     this.initializeRainAndLighting();
     this.generateTerrain();
     this.positionCameraAboveTerrain();
-    // this.addZombie();
 
     this.loadImmutableObjects();
 
-    // this.loadPlayer();
-    // this.addWall();
     this.loadBuildings();
     this.loadGravestones();
     this.loadTower();
     this.loadGarage();
     this.loadBodybag();
-    //this.loadShakaZulu();
     this.loadHospital();
-    //this.loadBuild();
-    //this.loadpath();
+
     this.loadcar();
-    // this.loadAmbulance();
     this.loadHospital();
-    //this.loadAmbulance();
-    //this.loadZombie();
- 
-    this.gameState.startNewWave();
 
     this.animate();
     this.animate2();
-    this.animateRain();
   }
 
   loadBuildings() {
@@ -278,8 +274,7 @@ class Scene {
     const zombie = new Zombie(this, position, type);
     this.zombies.push(zombie);
     return zombie;
-}
-
+  }
 
   loadTower() {
     const gltfLoader = new GLTFLoader();
@@ -583,6 +578,49 @@ class Scene {
     // );
   }
 
+  getCurrentChapter() {
+    return Array.from(document.querySelectorAll(".loading-screen")).findIndex(
+      (screen) => screen.classList.contains("active"),
+    );
+  }
+
+  updateGameLoadingProgress(loaded, total) {
+    this.totalGameAssets = total;
+    this.loadedGameAssets = loaded;
+    const progress = (loaded / total) * 100;
+    this.loadingProgress.textContent = `Loading game assets: ${Math.round(progress)}%`;
+  }
+
+  updateLoadingProgress(chapter, progress) {
+    const loadingBar = this.chapters[chapter].querySelector(".loading-bar");
+    const loadingText = this.chapters[chapter].querySelector(".loading-text");
+
+    loadingBar.style.width = `${progress}%`;
+    loadingText.textContent = `Loading Chapter ${chapter + 1}... ${Math.round(progress)}%`;
+    if (progress >= 100) {
+      this.chapters[chapter].classList.remove("active");
+    } else {
+      // setTimeout(() => {
+      //   this.updateGameLoadingProgress(progress, total);
+      // }, 2000);
+    }
+  }
+
+  startChapterLoading() {
+    const chapter = this.currentChapter;
+    this.chapters[chapter].classList.add("active");
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress > 100) {
+        progress = 100;
+        clearInterval(interval);
+      }
+      this.updateLoadingProgress(chapter, progress);
+    }, 500);
+    this.gameState.startNewWave();
+  }
+
   getTerrainHeight(x, z) {
     if (!this.groundMesh) return 0;
 
@@ -639,16 +677,16 @@ class Scene {
     const rainPositions = [];
     this.rainVelocities = [];
     this.rainCOunt = 10000;
-    
+
     for (let i = 0; i < this.rainCount; i++) {
       rainPositions.push(
-        Math.random() * 1000 - 500,  // x
-        Math.random() * 500 - 250,   // y
-        Math.random() * 1000 - 500   // z
+        Math.random() * 1000 - 500, // x
+        Math.random() * 500 - 250, // y
+        Math.random() * 1000 - 500, // z
       );
 
-      this.rainVelocities.push(0,-Math.random()*0.2-0.1,0);
-      
+      this.rainVelocities.push(0, -Math.random() * 0.2 - 0.1, 0);
+
       // // Store velocity for each raindrop
       // this.rainDrops.push({
       //   velocity: -0.1 - Math.random() * 0.1,
@@ -657,8 +695,8 @@ class Scene {
     }
 
     this.rainGeo.setAttribute(
-      'position',
-      new THREE.Float32BufferAttribute(rainPositions, 3)
+      "position",
+      new THREE.Float32BufferAttribute(rainPositions, 3),
     );
 
     // Create rain material
@@ -667,22 +705,21 @@ class Scene {
       size: 0.1,
       transparent: true,
       opacity: 0.6,
-      depthWrite: false
+      depthWrite: false,
     });
 
     // Create rain system
     this.rain = new THREE.Points(this.rainGeo, rainMaterial);
     this.scene.add(this.rain);
 
-   
     // Load cloud texture and create clouds
     const loader = new THREE.TextureLoader();
-    loader.load('/textures/smoke.png', (texture) => {
+    loader.load("/textures/smoke.png", (texture) => {
       const cloudGeo = new THREE.PlaneGeometry(500, 500);
       const cloudMaterial = new THREE.MeshLambertMaterial({
         map: texture,
         transparent: true,
-        opacity: 0.4
+        opacity: 0.4,
       });
 
       this.cloudParticles = [];
@@ -692,13 +729,13 @@ class Scene {
         cloud.position.set(
           Math.random() * 1000 - 500,
           400,
-          Math.random() * 1000 - 500
+          Math.random() * 1000 - 500,
         );
         cloud.rotation.x = 1.16;
         cloud.rotation.y = -0.12;
         cloud.rotation.z = Math.random() * 2 * Math.PI;
         cloud.material.opacity = 0.6;
-        
+
         this.cloudParticles.push(cloud);
         this.scene.add(cloud);
       }
@@ -719,16 +756,16 @@ class Scene {
   // }
   updateRainAndLighting() {
     // Animate clouds
-    this.cloudParticles.forEach(cloud => {
+    this.cloudParticles.forEach((cloud) => {
       cloud.rotation.z -= 0.001;
     });
 
     // Update rain positions
     const positions = this.rainGeo.attributes.position.array;
-    
+
     for (let i = 0; i < this.rainCount; i++) {
       const rainDrop = this.rainDrops[i];
-      
+
       // Update Y position with velocity
       positions[i * 3 + 1] += rainDrop.velocity;
 
@@ -737,7 +774,7 @@ class Scene {
         positions[i * 3 + 1] = 200;
       }
     }
-    
+
     this.rainGeo.attributes.position.needsUpdate = true;
 
     // Random lightning effect
@@ -746,7 +783,7 @@ class Scene {
         this.flash.position.set(
           Math.random() * 400,
           300 + Math.random() * 200,
-          100
+          100,
         );
       }
       this.flash.power = 50 + Math.random() * 500;
@@ -941,24 +978,24 @@ class Scene {
     this.updatePlayerMovement();
 
     const delta = this.clock.getDelta();
-        
-        // Update all zombies
-        this.zombies.forEach(zombie => {
-            zombie.update(delta);
-        });
-        
-        this.renderer.render(this.scene, this.camera);
+
+    // Update all zombies
+    this.zombies.forEach((zombie) => {
+      zombie.update(delta);
+    });
+
+    this.renderer.render(this.scene, this.camera);
 
     //render objects
     this.loadMutableObjects();
-   
+
     this.gameState.updateUI();
     this.renderer.render(this.scene, this.camera);
   };
 
   animate2 = () => {
     requestAnimationFrame(this.animate2); // Fix: Was calling this.animate instead of this.animate2
-    
+
     // Update second camera position to follow main camera from above
     this.secondCamera.position.set(
       this.camera.position.x,

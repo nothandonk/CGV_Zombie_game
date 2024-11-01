@@ -31,6 +31,11 @@ export class ShootingMechanism {
 
     // Add event listener for shooting
     document.addEventListener("click", this.shoot);
+    document.addEventListener("keydown", (e) => {
+      if (e.key == " ") {
+        this.shoot();
+      }
+    });
 
     // Start animation loop
     this.animate();
@@ -233,29 +238,30 @@ export class ShootingMechanism {
       // If no hit, shoot into the distance along the ray
       const targetPos = gunPos
         .clone()
-        .add(this.raycaster.ray.direction.clone().multiplyScalar(100));
+        .add(this.raycaster.ray.direction.clone().multiplyScalar(300));
       this.createBullet(gunPos, targetPos);
     }
   }
 
   handleHit(target) {
     let zombieInstance = null;
+    console.log(target);
 
     // Traverse upwards to find the object with `zombieInstance`
     let obj = target;
     while (obj && !obj.userData.zombieInstance) {
-        obj = obj.parent;
+      obj = obj.parent;
     }
 
     // If we found an object with `zombieInstance`, it's a zombie
     if (obj && obj.userData.zombieInstance) {
-        zombieInstance = obj.userData.zombieInstance;
-        console.log('Hit a zombie!');
-        zombieInstance.takeDamage(10); // Apply damage
+      zombieInstance = obj.userData.zombieInstance;
+      console.log("Hit a zombie!");
+      zombieInstance.takeDamage(10); // Apply damage
     } else {
-        console.log('Target hit, but not a zombie:', target);
+      console.log("Target hit, but not a zombie:", target);
     }
-    
+
     const originalMaterial = target.material.clone();
     target.material.color.setHex(0xff0000);
 
