@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import Zombie from "./object/zombie.js";
 
 export class ShootingMechanism {
   constructor(world) {
@@ -292,6 +293,23 @@ export class ShootingMechanism {
   }
 
   handleHit(target) {
+    let zombieInstance = null;
+
+    // Traverse upwards to find the object with `zombieInstance`
+    let obj = target;
+    while (obj && !obj.userData.zombieInstance) {
+        obj = obj.parent;
+    }
+
+    // If we found an object with `zombieInstance`, it's a zombie
+    if (obj && obj.userData.zombieInstance) {
+        zombieInstance = obj.userData.zombieInstance;
+        console.log('Hit a zombie!');
+        zombieInstance.takeDamage(10); // Apply damage
+    } else {
+        console.log('Target hit, but not a zombie:', target);
+    }
+    
     const originalMaterial = target.material.clone();
     target.material.color.setHex(0xff0000);
 
