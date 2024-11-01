@@ -42,7 +42,7 @@
                 width: 40%;
                 height: 100%;
                 padding: 40px;
-                background: rgba(0, 0, 0, 0.8);
+                background: rgba(0, 0, 0, 1);
                 border-right: 2px solid rgba(255, 215, 0, 0.3);
                 display: flex;
                 flex-direction: column;
@@ -467,7 +467,47 @@
                 margin-bottom: 10px;
             }
 
-            /* ... (rest of the existing styles) ... */
+            .credits-container {
+                height: 100vh;
+                overflow: hidden;
+                position: absolute;
+                z-index: 3200;
+                background-color: rgba(0, 0, 0, 1);
+                display: none;
+                width: 100%;
+                max-width: 800px;
+            }
+
+            .credits-content {
+                position: absolute;
+                bottom: -100%;
+                width: 100%;
+                text-align: center;
+                animation: scroll 30s linear forwards;
+            }
+
+            .credit-section {
+                margin: 40px 0;
+            }
+
+            .credit-title {
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+
+            .credit-name {
+                font-size: 20px;
+                margin: 5px 0;
+            }
+
+            @keyframes scroll {
+                from {
+                    transform: translateY(0);
+                }
+                to {
+                    transform: translateY(-200%);
+                }
+            }
         </style>
     </head>
     <body>
@@ -566,7 +606,7 @@
     </div> -->
 
         <!-- Story/Loading Screens -->
-        <div id="chapter1" class="loading-screen active">
+        <div id="chapter1" class="loading-screen">
             <div class="story-container">
                 <h1 class="chapter-title">Chapter 1: Birth and Beginnings</h1>
                 <div class="story-text">
@@ -581,6 +621,83 @@
             <div class="loading-bar-container">
                 <div class="loading-bar"></div>
                 <div class="loading-text">Loading Chapter 1... 0%</div>
+            </div>
+        </div>
+
+        <!-- Chapter 2: Chaos in Dobsonville -->
+        <div id="chapter2" class="loading-screen">
+            <div class="story-container">
+                <h1 class="chapter-title">Chapter 2: Chaos in Dobsonville</h1>
+                <div class="story-text">
+                    <p>
+                        As the infection spread, Dobsonville transformed. The
+                        streets, once vibrant, now reverberated with cries and
+                        confusion, marking the start of tumultuous times.
+                    </p>
+                </div>
+            </div>
+            <div class="loading-bar-container">
+                <div class="loading-bar"></div>
+                <div class="loading-text">Loading Chapter 2... 0%</div>
+            </div>
+        </div>
+
+        <!-- Chapter 3: Gathering at the Soweto Towers -->
+        <div id="chapter3" class="loading-screen">
+            <div class="story-container">
+                <h1 class="chapter-title">
+                    Chapter 3: Gathering at the Soweto Towers
+                </h1>
+                <div class="story-text">
+                    <p>
+                        The Soweto Towers, symbols of art and history, became
+                        beacons of unity. Communities strategized and
+                        strengthened their bonds beneath these towering
+                        structures.
+                    </p>
+                </div>
+            </div>
+            <div class="loading-bar-container">
+                <div class="loading-bar"></div>
+                <div class="loading-text">Loading Chapter 3... 0%</div>
+            </div>
+        </div>
+
+        <!-- Chapter 4: The Spirit of Resistance -->
+        <div id="chapter4" class="loading-screen">
+            <div class="story-container">
+                <h1 class="chapter-title">
+                    Chapter 4: The Spirit of Resistance
+                </h1>
+                <div class="story-text">
+                    <p>
+                        Amid adversity, the cry "Vukuzenzele" sparked action.
+                        Artists and fighters alike fortified defenses, embodying
+                        the indomitable spirit of Soweto.
+                    </p>
+                </div>
+            </div>
+            <div class="loading-bar-container">
+                <div class="loading-bar"></div>
+                <div class="loading-text">Loading Chapter 4... 0%</div>
+            </div>
+        </div>
+
+        <!-- Chapter 5: The Soldier's Duty -->
+        <div id="chapter5" class="loading-screen">
+            <div class="story-container">
+                <h1 class="chapter-title">Chapter 5: The Soldier's Duty</h1>
+                <div class="story-text">
+                    <p>
+                        Tshepo Mahlangu, SANDF special forces, stood firm. His
+                        oath to protect echoed in his heart as he fought for the
+                        spirit and survival of Soweto.
+                    </p>
+                </div>
+            </div>
+            <div class="loading-bar-container">
+                <div class="loading-bar"></div>
+                <div class="loading-text">Loading Chapter 5... 0%</div>
             </div>
         </div>
 
@@ -618,6 +735,48 @@
             <button id="next-level-button" onclick="nextLevel()">
                 Next Level
             </button>
+        </div>
+
+        <div id="credits" class="credits-container">
+            <div id="credits-content" class="credits-content">
+                <div class="credits-section">
+                    <div class="credit-title">Soweto Chronicles</div>
+                    <div class="credit-name">
+                        University of the Witwatersrand
+                    </div>
+                    <div class="credit-name">CSAM</div>
+                </div>
+
+                <div class="credits-section">
+                    <div class="credit-title">Development Team</div>
+                    <div class="credit-name">Teddy Mngwenya</div>
+                    <div class="credit-name">Nothando Nkambule</div>
+                    <div class="credit-name">Mpho Nkutha</div>
+                    <div class="credit-name">Oratile Nailana</div>
+                    <div class="credit-name">Thapelo Makeke</div>
+                    <div class="credit-name">Karabo Mnisi</div>
+                </div>
+
+                <div class="credits-section">
+                    <div class="credit-title">Course</div>
+                    <div class="credit-name">
+                        Computer Graphics and Visualization III
+                    </div>
+                </div>
+
+                <div class="credits-section">
+                    <div class="credit-title">Special Thanks</div>
+                    <div class="credit-name">Computer Science Faculty</div>
+                    <div class="credit-name">
+                        University of the Witwatersrand
+                    </div>
+                </div>
+
+                <div class="credits-section">
+                    <div class="credit-title">© 2024</div>
+                    <div class="credit-name">All Rights Reserved</div>
+                </div>
+            </div>
         </div>
 
         <!-- Scripts -->
@@ -679,8 +838,27 @@
 
             window.showCredits = function () {
                 // Credits implementation
-            };
+                const creditsContainer = document.getElementById("credits");
+                const creditContent =
+                    document.getElementById("credits-content");
+                creditsContainer.style.display = "block";
+                // Keyboard controls
+                document.addEventListener("keydown", (event) => {
+                    if (event.key === "Enter") {
+                        if (creditsContainer.style.display != "none") {
+                            creditsContainer.style.display = "none";
+                        }
+                    } else if (event.key === "Escape") {
+                        if (creditsContainer.style.display != "none") {
+                            creditsContainer.style.display = "none";
+                        }
+                    }
+                });
 
+                creditContent.addEventListener("animationend", () => {
+                    creditsContainer.style.display = "none";
+                });
+            };
             // Menu Animation Setup
             const canvas = document.getElementById("menu-animation");
             const renderer = new THREE.WebGLRenderer({
