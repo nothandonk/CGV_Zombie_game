@@ -27,6 +27,7 @@ export class GLTFObject {
       _.position.set(this.position[0], this.position[1], this.position[2]);
       _.rotation.set(this.rotation[0], this.rotation[1], this.rotation[2]);
       _.scale.set(this.scale[0], this.scale[1], this.scale[2]);
+      
       if (this.followCamera) {
         this.world.camera.add(_);
       } else {

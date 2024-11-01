@@ -1,29 +1,28 @@
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
-import * as SkeletonUtils from 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/utils/SkeletonUtils.js';
+import * as SkeletonUtils from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/utils/SkeletonUtils.js";
 
 // Create a cache for loaded models
 const modelCache = new Map();
 
 class Zombie {
-    constructor(world, position = { x: 0, y: 0, z: 0 }, type = 'normal') {
+  constructor(world, position = { x: 0, y: 0, z: 0 }, type = "normal") {
+    // world properties
+    this.world = world;
+    this.scene = world.scene;
+    this.camera = world.camera;
+    this.playerHeight = 30;
+    this.playerRadius = 0.5;
+    this.shooter = world.shooter;
 
-        // world properties
-        this.world = world;
-        this.scene = world.scene;
-        this.camera = world.camera;
-        this.playerHeight = 30;
-        this.playerRadius = 0.5;
-        this.shooter = world.shooter;
-
-        // zombie properties
-        this.type = type;
-        this.position = position;
-        this.model = null;
-        this.speed = null;
-        this.health = null;
-        this.isDead = false;
-        this.boundingBox = null;
+    // zombie properties
+    this.type = type;
+    this.position = position;
+    this.model = null;
+    this.speed = null;
+    this.health = null;
+    this.isDead = false;
+    this.boundingBox = null;
 
         // animation properties
         this.mixer = null;
@@ -40,71 +39,71 @@ class Zombie {
         this.setAttributesBasedOnType();
     }
 
-    loadModel(modelPath) {
-        // Check if model is already in cache
-        if (modelCache.has(modelPath)) {
-            const cachedModel = modelCache.get(modelPath);
-            if (cachedModel.pending) {
-                // If model is still loading, wait for it
-                cachedModel.promise.then((gltf) => {
-                    this.setupModel(SkeletonUtils.clone(gltf.scene), gltf.animations);
-                });
-            } else {
-                // If model is already loaded, use the clone immediately
-                const gltf = cachedModel.data;
-                this.setupModel(SkeletonUtils.clone(gltf.scene), gltf.animations);
-            }
-            return;
-        }
-
-        // If model isn't cached, load it
-        const loader = new GLTFLoader();
-        
-        // Create a promise for the model load
-        const modelPromise = new Promise((resolve, reject) => {
-            loader.load(modelPath, 
-                (gltf) => resolve(gltf),
-                undefined,
-                (error) => reject(error)
-            );
+  loadModel(modelPath) {
+    // Check if model is already in cache
+    if (modelCache.has(modelPath)) {
+      const cachedModel = modelCache.get(modelPath);
+      if (cachedModel.pending) {
+        // If model is still loading, wait for it
+        cachedModel.promise.then((gltf) => {
+          this.setupModel(SkeletonUtils.clone(gltf.scene), gltf.animations);
         });
-
-        // Add to cache as pending
-        modelCache.set(modelPath, {
-            pending: true,
-            promise: modelPromise
-        });
-
-        // Load the model
-        modelPromise
-            .then((gltf) => {
-                // Update cache with loaded model
-                modelCache.set(modelPath, {
-                    pending: false,
-                    data: gltf
-                });
-                
-                // Setup this zombie's cloned model
-                this.setupModel(SkeletonUtils.clone(gltf.scene), gltf.animations);
-            })
-            .catch((error) => {
-                console.error('Error loading zombie model:', error);
-                modelCache.delete(modelPath); // Remove failed model from cache
-            });
+      } else {
+        // If model is already loaded, use the clone immediately
+        const gltf = cachedModel.data;
+        this.setupModel(SkeletonUtils.clone(gltf.scene), gltf.animations);
+      }
+      return;
     }
 
-    setupModel(modelScene, animations) {
-        this.model = modelScene;
-        this.model.position.set(
-            this.position.x,
-            this.position.y,
-            this.position.z
-        );
-        
-        this.model.scale.set(20, 20, 20);
+    // If model isn't cached, load it
+    const loader = new GLTFLoader();
 
-        // Associate this zombie instance with the model
-        this.model.userData.zombieInstance = this;
+    // Create a promise for the model load
+    const modelPromise = new Promise((resolve, reject) => {
+      return loader.load(
+        modelPath,
+        (gltf) => resolve(gltf),
+        undefined,
+        (error) => reject(error),
+      );
+    });
+
+    // Add to cache as pending
+    modelCache.set(modelPath, {
+      pending: true,
+      promise: modelPromise,
+    });
+
+    // Load the model
+    modelPromise
+      .then((gltf) => {
+        // Update cache with loaded model
+        modelCache.set(modelPath, {
+          pending: false,
+          data: gltf,
+        });
+
+        // Setup this zombie's cloned model
+        this.setupModel(SkeletonUtils.clone(gltf.scene), gltf.animations);
+      })
+      .catch((error) => {
+        console.error("Error loading zombie model:", error);
+        modelCache.delete(modelPath); // Remove failed model from cache
+      });
+  }
+
+  setupModel(modelScene, animations) {
+    this.model = modelScene;
+    this.model.position.set(this.position.x, this.position.y, this.position.z);
+
+    this.model.scale.set(20, 20, 20);
+
+    // Add zombie to shooting targets
+    this.shooter.addTarget(this.model);
+
+    // Associate this zombie instance with the model
+    this.model.userData.zombieInstance = this;
 
         this.boundingBox = new THREE.Box3().setFromObject(this.model);
         
@@ -115,13 +114,12 @@ class Zombie {
                 this.animations[clip.name] = this.mixer.clipAction(clip);
             });
 
-            if (this.animations["walking"]){
-                this.playAnimation("walking");
-            } else {
-                this.playAnimation("running");
-            }
-            
-        }
+      if (this.animations["walking"]) {
+        this.playAnimation("walking");
+      } else {
+        this.playAnimation("running");
+      }
+    }
 
         // Enable shadows
         this.model.traverse((child) => {
@@ -156,27 +154,27 @@ class Zombie {
                 this.loadModel('zombie3.glb');
                 break;
 
-            default:
-                this.speed = 0.4;
-                this.health = 100;
-                this.loadModel('zombie1.glb');
-                break;
-        }
+      default:
+        this.speed = 0.4;
+        this.health = 100;
+        this.loadModel("zombie1.glb");
+        break;
+    }
+  }
+
+  playAnimation(name, speed = 0.6) {
+    if (this.currentAction && this.currentAction !== this.animations[name]) {
+      // Only fade out if it's a different action
+      this.currentAction.crossFadeTo(this.animations[name], 0.5, false);
     }
 
-    playAnimation(name, speed = 0.6) {
-        if (this.currentAction && this.currentAction !== this.animations[name]) {
-            // Only fade out if it's a different action
-            this.currentAction.crossFadeTo(this.animations[name], 0.5, false);
-        }
-        
-        this.currentAction = this.animations[name];
-        
-        if (this.currentAction) {
-            this.currentAction.reset().fadeIn(0.5).play(); // Fade in the new action
-            this.currentAction.timeScale = speed;
-        }
+    this.currentAction = this.animations[name];
+
+    if (this.currentAction) {
+      this.currentAction.reset().fadeIn(0.5).play(); // Fade in the new action
+      this.currentAction.timeScale = speed;
     }
+  }
 
     checkCollisions(nextPosition) {
     const graceDistance = 0.2;
@@ -345,54 +343,50 @@ update(delta) {
         return null;
     }
 
-    takeDamage(damage) {
-        this.health -= damage;
-        console.log(`Zombie hit! Current health: ${this.health}`);
-    
-        if (this.health > 0) {
-            // Play taking damage animation
-            //this.playTakingDamageAnimation();
-        } else {
-            // If health reaches 0 or below, trigger death
-            this.die();
-        }
+  takeDamage(damage) {
+    this.health -= damage;
+    console.log(`Zombie hit! Current health: ${this.health}`);
+
+    if (this.health > 0) {
+      // Play taking damage animation
+      //this.playTakingDamageAnimation();
+    } else {
+      // If health reaches 0 or below, trigger death
+      this.die();
     }
+  }
 
-    die() {
-        if (this.isDead) return;
-        this.world.gameState.killZombie()
-        this.isDead = true;
+  die() {
+    if (this.isDead) return;
+    this.world.gameState.killZombie();
+    this.isDead = true;
 
-        /* if (this.zombieSound && this.zombieSound.isPlaying) {
+    /* if (this.zombieSound && this.zombieSound.isPlaying) {
             this.zombieSound.stop();
-        }  */   
+        }  */
 
-        //this.playAnimation('dying');
-        console.log("Zombie is dead!");
+    //this.playAnimation('dying');
+    console.log("Zombie is dead!");
 
-        // Stop further updates
-        setTimeout(() => {
+    // Stop further updates
+    setTimeout(() => {
+      if (this.model) {
+        this.shooter.removeTarget(this.model);
+        this.scene.remove(this.model);
 
-            if (this.model){
-                this.shooter.removeTarget(this.model);
-                this.scene.remove(this.model);
-    
-                // Optionally dispose of resources
-                this.model.traverse((child) => {
-                    if (child instanceof THREE.Mesh) {
-                        child.geometry.dispose();
-                        child.material.dispose();
-                    }
-                });
-            }
-            if (this.mixer) {
-                this.mixer.stopAllAction();
-            }
-        }, 1000);
-    }
-
-    
-
+        // Optionally dispose of resources
+        this.model.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.geometry.dispose();
+            child.material.dispose();
+          }
+        });
+      }
+      if (this.mixer) {
+        this.mixer.stopAllAction();
+      }
+    }, 1000);
+  }
 }
 
 export default Zombie;
