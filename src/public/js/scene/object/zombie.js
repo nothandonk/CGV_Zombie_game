@@ -186,7 +186,7 @@ class Zombie {
     
     const predictedBox = this.boundingBox.clone();
     predictedBox.translate(displacement);
-    //predictedBox.expandByScalar(graceDistance);
+    predictedBox.expandByScalar(graceDistance);
     
     for (const object of this.world.objectsToCheck) {
         if (predictedBox.intersectsBox(object.boundingBox)) {
