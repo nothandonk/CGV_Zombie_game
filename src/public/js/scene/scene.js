@@ -227,20 +227,20 @@ class Scene {
     this.loadImmutableObjects();
 
  
-    // this.loadBuildings();
-    // this.loadGravestones();
-   // // this.loadTower();
-    // this.loadGarage();
-    // this.loadBodybag();
-    // this.loadShakaZulu();
-    // this.loadHospital();
-    // this.loadBuild();
-   // this.loadCone();
-    // this.loadcar();
-    // this.loadHospital();
-    // this.loadTombstone();
-    // this.loadTombstoneTwo();
-    // this.loadWall();
+    this.loadBuildings();
+    this.loadGravestones();
+    this.loadTower();
+    this.loadGarage();
+    this.loadBodybag();
+    this.loadShakaZulu();
+    this.loadHospital();
+    this.loadBuild();
+    this.loadCone();
+    this.loadcar();
+    this.loadHospital();
+   // this.loadTombstone();
+    this.loadTombstoneTwo();
+    this.loadWall();
     //this.loadZombie();
  
     this.gameState.startNewWave();
@@ -375,7 +375,7 @@ class Scene {
       false,
     );
   }
-  lo
+  
 
   loadWall(){
     const gltfLoader = new GLTFLoader();
@@ -453,7 +453,7 @@ class Scene {
   loadGravestones() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/gravestones.glb", (gltf) => {
+    gltfLoader.load("/playground.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(10, 10, 10); // Adjust scale if needed
       scene.position.set(0, 0, -280); // Position th
@@ -512,17 +512,36 @@ class Scene {
     const depthSegments = 2000;
 
     // //skybox
-    // // const textureLoader = new THREE.TextureLoader();
-    // // const skyboxGeometry = new THREE.BoxGeometry(width, depth, depth);
-    // // const skyboxMaterial = new THREE.MeshBasicMaterial({
-    // //   map: textureLoader.load("http://localhost:3000/skybox/overcast.png"),
-    // //   side: THREE.BackSide,
-    // //   transparent: true,
-    // // });
+    // const textureLoader = new THREE.TextureLoader();
+    // const skyboxGeometry = new THREE.BoxGeometry(width, depth, depth);
+    // const skyboxMaterial = new THREE.MeshBasicMaterial({
+    //   map: textureLoader.load("http://localhost:3000/skybox/WORK.png"),
+    //   side: THREE.BackSide,
+    //   transparent: true,
+    // });
    
 
-    // // const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
-    // // this.scene.add(skybox);
+    // const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+    // this.scene.add(skybox);
+
+    //SkyDome
+    const textureLoader = new THREE.TextureLoader();
+    const cloudTexture = textureLoader.load("http://localhost:3000/skybox/overcast.png"); // Path to your cloud texture
+    
+    // Create a hemisphere geometry
+    const skyDomeGeometry = new THREE.SphereGeometry(width, depth, depth, 0, Math.PI * 2, 0, Math.PI / 2);
+    const skyDomeMaterial = new THREE.MeshBasicMaterial({
+        map: cloudTexture,
+        side: THREE.BackSide, // Render the inside of the dome
+        transparent: true,
+    });
+    
+    const skyDome = new THREE.Mesh(skyDomeGeometry, skyDomeMaterial);
+   // skyDome.position.set(0, 2000, 0); // Position it high above the scene
+    
+    this.scene.add(skyDome);
+    
+
     // const rgbeLoader = new RGBELoader();
     // rgbeLoader.load("/overcast_soil_2_4k.hdr", (hdrTexture) => {
     //   hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
@@ -598,7 +617,7 @@ class Scene {
 
     geometry.computeVertexNormals();
     // Load the grass texture
-    const textureLoader = new THREE.TextureLoader();
+    //const textureLoader = new THREE.TextureLoader();
     const grassTexture = textureLoader.load("/thesoil.jpg"); // Path to your texture image
 
     // Optionally, adjust texture properties to repeat it
