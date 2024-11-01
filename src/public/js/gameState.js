@@ -191,9 +191,8 @@ class GameState {
 
     
 
-    for (let i = 0; i < this.zombiesRemainingInWave; i++){
-
-      this.world.spawnZombie({ x: this._getRandomNumber(), y: 0, z: this._getRandomNumber() });
+    for (let i = 0; i < 1; i++){
+      this.world.spawnZombie({ x: 0, y: 0, z: 0 });
     }
    this.world.updateUI();
   }

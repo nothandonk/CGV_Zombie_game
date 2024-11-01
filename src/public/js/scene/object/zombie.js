@@ -1,5 +1,4 @@
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
-import { FBXLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/FBXLoader.js";
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
 import * as SkeletonUtils from 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/utils/SkeletonUtils.js';
 
@@ -30,6 +29,13 @@ class Zombie {
         this.mixer = null;
         this.animations = {};
         this.currentAction = null;
+
+        //path finding details
+        this.path = null;
+        this.currentPathIndex = 0;
+        this.pathUpdateInterval = 2000;
+        this.lastPathUpdate = 0;
+        this.pathVisualization = null;
         
         this.setAttributesBasedOnType();
     }
@@ -100,10 +106,8 @@ class Zombie {
         // Associate this zombie instance with the model
         this.model.userData.zombieInstance = this;
 
-        // Create a bounding box for the zombie
         this.boundingBox = new THREE.Box3().setFromObject(this.model);
         
-        // Setup animations
         if (animations && animations.length) {
             this.mixer = new THREE.AnimationMixer(this.model);
             
@@ -130,7 +134,6 @@ class Zombie {
         // Add zombie to shooting targets
         this.shooter.addTarget(this.model);
         
-        // Add only the cloned model to the scene
         this.scene.add(this.model);
         console.log("Cloned zombie model added to scene");
     }
@@ -138,7 +141,7 @@ class Zombie {
     setAttributesBasedOnType() {
         switch (this.type) {
             case 'normal':
-                this.speed = 0.5;
+                this.speed = 0.4;
                 this.health = 100;
                 this.loadModel('zombie1.glb');
                 break;
@@ -176,72 +179,170 @@ class Zombie {
     }
 
     checkCollisions(nextPosition) {
-        const nextBoundingBox = this.boundingBox.clone().translate(nextPosition.sub(this.model.position));
+    const graceDistance = 0.2;
 
-        for (const object of this.world.objectsToCheck) {
-            if (object !== this.model && object.geometry) {  // Ignore self
-                const objectBoundingBox = new THREE.Box3().setFromObject(object);
-                if (nextBoundingBox.intersectsBox(objectBoundingBox)) {
-                    return true;  // Collision detected
-                }
-            }
+    const displacement = new THREE.Vector3();
+    displacement.subVectors(nextPosition, this.model.position);
+    
+    const predictedBox = this.boundingBox.clone();
+    predictedBox.translate(displacement);
+    //predictedBox.expandByScalar(graceDistance);
+    
+    for (const object of this.world.objectsToCheck) {
+        if (predictedBox.intersectsBox(object.boundingBox)) {
+            // Calculate push-back direction
+            const currentCenter = new THREE.Vector3();
+            const objectCenter = new THREE.Vector3();
+            
+            this.boundingBox.getCenter(currentCenter);
+            object.boundingBox.getCenter(objectCenter);
+            
+            const pushDirection = new THREE.Vector3()
+                .subVectors(currentCenter, objectCenter)
+                .normalize();
+            
+            // Apply minimal push-back to avoid overlap
+            return {
+                collision: true,
+                adjustedPosition: new THREE.Vector3()
+                    .addVectors(this.model.position, pushDirection.multiplyScalar(0.1))
+            };
         }
-        return false;  // No collisions
     }
 
-    update(delta) {
-        if (this.mixer) {
-            this.mixer.update(delta);
-        }
+    return { collision: false, adjustedPosition: nextPosition };
+}
 
-        if (this.model) {
 
-            const terrainHeight = this.world.getTerrainHeight(
-                this.model.position.x,
-                this.model.position.z,
-            );
-            this.model.position.y = terrainHeight;
 
-           // Calculate direction to camera
-           const direction = new THREE.Vector3();
-           direction.subVectors(this.camera.position, this.model.position).normalize();
+update(delta) {
+    if (this.mixer) {
+        this.mixer.update(delta);
+    }
 
-           const distanceToCamera = this.camera.position.distanceTo(this.model.position);
-           const stoppingDistance = 70;
+    if (this.model) {
+        // Get terrain height at current position
+        const terrainHeight = this.world.getTerrainHeight(
+            this.model.position.x,
+            this.model.position.z
+        );
+        this.model.position.y = terrainHeight;
 
-           const nextPosition = this.model.position.clone().addScaledVector(direction, this.speed);
+        // Get current position and target (camera) position
+        const currentPos = this.model.position.clone();
+        const targetPos = this.camera.position.clone();
+        
+        // Calculate direction to camera and distance
+        const direction = new THREE.Vector3();
+        direction.subVectors(targetPos, currentPos).normalize();
+        const distanceToCamera = currentPos.distanceTo(targetPos);
+        const stoppingDistance = 70;
 
-            // Move the zombie towards the camera if it's beyond the stopping distance and not colliding
-            if (distanceToCamera > stoppingDistance /* && !this.checkCollisions(nextPosition) */) {
-                this.model.position.copy(nextPosition);
-                if (this.animations['walking']) {
-                    if (this.currentAction !== this.animations['walking']) {
-                        this.playAnimation('walking');
-                    }
+        // Store current rotation for smooth interpolation
+        const currentRotation = this.model.rotation.y;
+        
+        if (distanceToCamera > stoppingDistance) {
+            // Calculate next position
+            const nextPosition = currentPos.clone().addScaledVector(direction, this.speed);
+            const { collision, adjustedPosition } = this.checkCollisions(nextPosition);
+
+            let finalPosition;
+            let movementDirection;
+
+            if (collision) {
+                // Try alternative paths if there's a collision
+                const leftPath = this.tryAlternativePath(direction, -Math.PI / 4);
+                const rightPath = this.tryAlternativePath(direction, Math.PI / 4);
+                
+                if (leftPath || rightPath) {
+                    finalPosition = leftPath || rightPath;
                 } else {
-                    if (this.currentAction !== this.animations['running']) {
-                        this.playAnimation('running');
-                    }
+                    finalPosition = adjustedPosition;
                 }
             } else {
-                // Ensure the zombie's position is set directly at the stopping distance
-                this.model.position.copy(this.camera.position).sub(direction.multiplyScalar(stoppingDistance));
-
-                if (distanceToCamera <= stoppingDistance && this.currentAction !== this.animations['punching']) {
-                    this.playAnimation('punching');
-                    this.world.gameState.damagePlayer(5)
-                    this.world.gameState.updateUI()
-                }
-
+                finalPosition = adjustedPosition;
             }
 
-            // Update the bounding box to the new position
-            this.boundingBox.setFromObject(this.model);
+            // Calculate actual movement direction based on where we're going
+            movementDirection = new THREE.Vector3();
+            movementDirection.subVectors(finalPosition, currentPos).normalize();
 
-             // Make the zombie look at the camera but only around the Y-axis
-             const angle = Math.atan2(direction.x, direction.z);
-             this.model.rotation.y = angle;
+            // Update position
+            this.model.position.copy(finalPosition);
+
+            // Calculate target rotation based on movement direction
+            const targetAngle = Math.atan2(movementDirection.x, movementDirection.z);
+            
+            // Smoothly interpolate rotation (lerp)
+            const rotationSpeed = 0.1;
+            let newRotation = currentRotation;
+            
+            // Handle rotation wrapping
+            const PI2 = Math.PI * 2;
+            while (targetAngle - newRotation > Math.PI) newRotation += PI2;
+            while (targetAngle - newRotation < -Math.PI) newRotation -= PI2;
+            
+            // Smoothly interpolate to target rotation
+            newRotation = THREE.MathUtils.lerp(newRotation, targetAngle, rotationSpeed);
+            this.model.rotation.y = newRotation;
+
+            // Play walking/running animation
+            if (this.animations['walking']) {
+                if (this.currentAction !== this.animations['walking']) {
+                    this.playAnimation('walking');
+                }
+            } else if (this.animations['running']) {
+                if (this.currentAction !== this.animations['running']) {
+                    this.playAnimation('running');
+                }
+            }
+        } else {
+            // At stopping distance, face the player directly for attack
+            const targetAngle = Math.atan2(direction.x, direction.z);
+            
+            // Smooth rotation interpolation for attack stance
+            const rotationSpeed = 0.15;
+            let newRotation = currentRotation;
+            
+            // Handle rotation wrapping
+            const PI2 = Math.PI * 2;
+            while (targetAngle - newRotation > Math.PI) newRotation += PI2;
+            while (targetAngle - newRotation < -Math.PI) newRotation -= PI2;
+            
+            // Smoothly interpolate to target rotation
+            newRotation = THREE.MathUtils.lerp(newRotation, targetAngle, rotationSpeed);
+            this.model.rotation.y = newRotation;
+
+            // Update position to maintain stopping distance
+            this.model.position.copy(targetPos).sub(direction.multiplyScalar(stoppingDistance));
+
+            // Play attack animation
+            if (distanceToCamera <= stoppingDistance && this.currentAction !== this.animations['punching']) {
+                this.playAnimation('punching');
+                this.world.gameState.damagePlayer(5);
+                this.world.gameState.updateUI();
+            }
         }
+
+        // Update the bounding box to the new position
+        this.boundingBox.setFromObject(this.model);
+    }
+}
+
+    tryAlternativePath(direction, angleOffset) {
+        // Try an alternative direction when the zombie is stuck
+        const alternativeDirection = direction.clone();
+        alternativeDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), angleOffset);
+        
+        const alternativePosition = this.model.position.clone()
+            .addScaledVector(alternativeDirection, this.speed);
+        
+        const { collision, adjustedPosition } = this.checkCollisions(alternativePosition);
+        
+        if (!collision) {
+            return adjustedPosition;
+        }
+        return null;
     }
 
     takeDamage(damage) {
