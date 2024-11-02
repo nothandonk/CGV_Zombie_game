@@ -18,11 +18,21 @@ document.addEventListener("DOMContentLoaded", async function () {
   //   true,
   // );
 
+  // const gun = new GLTFObject(
+  //   "/new_gun.glb",
+  //   [3, -3.2, -8.5],
+  //   [0, Math.PI, 0],
+  //   [0.1, 0.1, 0.1],
+  //   world,
+  //   true,
+  //   true,
+  // );
+
   const gun = new GLTFObject(
-    "/new_gun.glb",
-    [3, -3.2, -8.5],
+    "/m4.glb",
+    [2, -3.2, -6],
     [0, Math.PI, 0],
-    [0.1, 0.1, 0.1],
+    [2.5, 2.5, 2.5],
     world,
     true,
     true,

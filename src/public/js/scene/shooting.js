@@ -26,6 +26,17 @@ export class ShootingMechanism {
 
     // Add crosshair to camera
     this.camera.add(this.crosshair);
+    // Add audio listener to the camera
+    this.listener = new THREE.AudioListener();
+    this.camera.add(this.listener);
+
+    // Gunshot sound setup
+    this.gunshotSound = new THREE.Audio(this.listener);
+    this.audioLoader = new THREE.AudioLoader();
+    this.audioLoader.load('/audio/pewpew.mp3', (buffer) => {
+      this.gunshotSound.setBuffer(buffer);
+      this.gunshotSound.setVolume(0.5); // Adjust volume as needed
+    });
 
     // Shooting cooldown
     this.lastShot = 0;
@@ -118,16 +129,6 @@ export class ShootingMechanism {
   
     return crosshairGroup;
   }
-
-  // updateFlashlight(){
-  //   const gunPos = this.getflashWorldPosition();
-  //   this.flashlight.position.copy(gunPos);
-
-  //   // Set the flashlight's target in front of the gun
-  //   const targetPosition = gunPos.clone().add(this.camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(10));
-  //   this.flashlight.target.position.copy(targetPosition);
-  // }
-  
 
   createBullet(startPosition, targetPosition) {
     const geometry = new THREE.BoxGeometry(
@@ -249,6 +250,11 @@ export class ShootingMechanism {
       return; // Still in cooldown
     }
     this.lastShot = now;
+      // Play gunshot sound
+      if (this.gunshotSound.isPlaying) {
+        this.gunshotSound.stop();
+      }
+      this.gunshotSound.play();
 
     // const originalPosition = this.crosshair.position.clone();
     // // const originalGunPosition = this.gun.position.clone();
