@@ -229,7 +229,6 @@ export class ShootingMechanism {
 
     // Check for intersections with targets
     const intersects = this.raycaster.intersectObjects(this.targets);
-
     if (intersects.length > 0) {
       const hitObject = intersects[0].object;
       this.createBullet(gunPos, intersects[0].point);
