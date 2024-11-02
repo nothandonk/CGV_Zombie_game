@@ -28,6 +28,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     true,
   );
 
+  // const gun = new GLTFObject(
+  //   "/m4.glb",
+  //   [2, -3.2, -6],
+  //   [0, Math.PI, 0],
+  //   [2.5, 2.5, 2.5],
+  //   world,
+  //   true,
+  //   true,
+  // );
+
 
   world.animate();
 });
