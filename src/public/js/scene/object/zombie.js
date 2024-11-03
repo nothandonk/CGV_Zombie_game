@@ -24,19 +24,19 @@ class Zombie {
     this.isDead = false;
     this.boundingBox = null;
 
-        // animation properties
-        this.mixer = null;
-        this.animations = {};
-        this.currentAction = null;
+    // animation properties
+    this.mixer = null;
+    this.animations = {};
+    this.currentAction = null;
 
-        //path finding details
-        this.path = null;
-        this.currentPathIndex = 0;
-        this.pathUpdateInterval = 2000;
-        this.lastPathUpdate = 0;
-        this.pathVisualization = null;
+    //path finding details
+    this.path = null;
+    this.currentPathIndex = 0;
+    this.pathUpdateInterval = 2000;
+    this.lastPathUpdate = 0;
+    this.pathVisualization = null;
         
-        this.setAttributesBasedOnType();
+    this.setAttributesBasedOnType();
     }
 
   loadModel(modelPath) {
@@ -96,45 +96,46 @@ class Zombie {
   setupModel(modelScene, animations) {
     this.model = modelScene;
     this.model.position.set(this.position.x, this.position.y, this.position.z);
-
     this.model.scale.set(20, 20, 20);
+    
+    // Clone materials for each zombie instance
+    this.model.traverse((child) => {
+        if (child.isMesh) {
+            // Create a unique material clone for each mesh
+            child.material = child.material.clone();
+            child.userData.zombieInstance = this;
+            // Add each mesh as a target for shooting
+            this.shooter.addTarget(child);
+        }
+    });
 
-    // Add zombie to shooting targets
-    this.shooter.addTarget(this.model);
-
-    // Associate this zombie instance with the model
-    this.model.userData.zombieInstance = this;
-
-        this.boundingBox = new THREE.Box3().setFromObject(this.model);
+    this.boundingBox = new THREE.Box3().setFromObject(this.model);
         
-        if (animations && animations.length) {
-            this.mixer = new THREE.AnimationMixer(this.model);
+    if (animations && animations.length) {
+        this.mixer = new THREE.AnimationMixer(this.model);
             
-            animations.forEach((clip) => {
-                this.animations[clip.name] = this.mixer.clipAction(clip);
-            });
-
-      if (this.animations["walking"]) {
-        this.playAnimation("walking");
-      } else {
-        this.playAnimation("running");
-      }
-    }
-
-        // Enable shadows
-        this.model.traverse((child) => {
-            if (child.isMesh) {
-                child.castShadow = true;
-                child.receiveShadow = true;
-            }
+        animations.forEach((clip) => {
+            this.animations[clip.name] = this.mixer.clipAction(clip);
         });
 
-        // Add zombie to shooting targets
-        this.shooter.addTarget(this.model);
-        
-        this.scene.add(this.model);
-        console.log("Cloned zombie model added to scene");
+        if (this.animations["walking"]) {
+            this.playAnimation("walking");
+        } else {
+            this.playAnimation("running");
+        }
     }
+
+    // Enable shadows
+    this.model.traverse((child) => {
+        if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+        }
+    });
+
+    this.scene.add(this.model);
+    console.log("Cloned zombie model added to scene");
+}
 
     setAttributesBasedOnType() {
         switch (this.type) {
@@ -214,6 +215,9 @@ class Zombie {
 
 
 update(delta) {
+    
+    if (this.isDead) return;
+
     if (this.mixer) {
         this.mixer.update(delta);
     }
@@ -315,7 +319,7 @@ update(delta) {
             this.model.position.copy(targetPos).sub(direction.multiplyScalar(stoppingDistance));
 
             // Play attack animation
-            if (distanceToCamera <= stoppingDistance && this.currentAction !== this.animations['punching']) {
+            if (distanceToCamera <= stoppingDistance && this.currentAction !== this.animations['punching'] && !this.isDead) {
                 this.playAnimation('punching');
                 this.world.gameState.damagePlayer(5);
                 this.world.gameState.updateUI();
@@ -358,35 +362,59 @@ update(delta) {
 
   die() {
     if (this.isDead) return;
-    this.world.gameState.killZombie();
+    
     this.isDead = true;
-
-    /* if (this.zombieSound && this.zombieSound.isPlaying) {
-            this.zombieSound.stop();
-        }  */
-
-    //this.playAnimation('dying');
-    console.log("Zombie is dead!");
-
-    // Stop further updates
-    setTimeout(() => {
-      if (this.model) {
-        this.shooter.removeTarget(this.model);
-        this.scene.remove(this.model);
-
-        // Optionally dispose of resources
+    this.world.gameState.killZombie();
+    
+    this.speed = 0;
+    
+    if (this.model) {
         this.model.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            child.geometry.dispose();
-            child.material.dispose();
-          }
+            if (child.isMesh) {
+                this.shooter.removeTarget(child);
+            }
         });
-      }
-      if (this.mixer) {
+    }
+
+    if (this.animations['dying']) {
+        this.playAnimation('dying');
+        
+        setTimeout(() => {
+            this.removeFromScene();
+        }, 1000);
+    } else {
+        this.removeFromScene();
+    }
+}
+
+removeFromScene() {
+    if (this.model) {
+        this.scene.remove(this.model);
+        
+        this.model.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                child.geometry.dispose();
+                child.material.dispose();
+            }
+        });
+        
+        this.model = null;
+    }
+    
+    if (this.mixer) {
         this.mixer.stopAllAction();
-      }
-    }, 1000);
-  }
+        this.mixer = null;
+    }
+    
+    this.boundingBox = null;
+    
+    if (this.world.zombies) {
+        const index = this.world.zombies.indexOf(this);
+        if (index > -1) {
+            this.world.zombies.splice(index, 1);
+        }
+    }
+}
 }
 
 export default Zombie;

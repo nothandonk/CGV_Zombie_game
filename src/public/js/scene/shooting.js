@@ -200,7 +200,11 @@ export class ShootingMechanism {
   }
 
   addTarget(target) {
-    this.targets.push(target);
+    if (target.geometry) {
+      // Update the target's matrixWorld
+      target.updateMatrixWorld(true);
+      this.targets.push(target);
+    }
   }
 
   getTargets() {
@@ -217,63 +221,61 @@ export class ShootingMechanism {
   shoot(event) {
     const now = Date.now();
     if (now - this.lastShot < this.shootingCooldown) {
-      return; // Still in cooldown
+      return;
     }
     this.lastShot = now;
 
-    // Calculate shooting direction from camera center
-    this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
+    // Get camera direction and position
+    const cameraPosition = this.camera.position.clone();
+    const cameraDirection = new THREE.Vector3(0, 0, -1);
+    cameraDirection.unproject(this.camera).sub(cameraPosition).normalize();
 
-    // Get the gun's world position
-    const gunPos = this.getGunWorldPosition();
+    // Update raycaster
+    this.raycaster.set(cameraPosition, cameraDirection);
 
-    // Check for intersections with targets
-    const intersects = this.raycaster.intersectObjects(this.targets);
+    const intersects = this.raycaster.intersectObjects(this.targets, false);
 
     if (intersects.length > 0) {
       const hitObject = intersects[0].object;
-      this.createBullet(gunPos, intersects[0].point);
+      const hitPoint = intersects[0].point;
+      
+      this.createBullet(this.getGunWorldPosition(), hitPoint);
       this.handleHit(hitObject);
     } else {
-      // If no hit, shoot into the distance along the ray
-      const targetPos = gunPos
-        .clone()
-        .add(this.raycaster.ray.direction.clone().multiplyScalar(300));
+      const gunPos = this.getGunWorldPosition();
+      const targetPos = gunPos.clone().add(cameraDirection.multiplyScalar(300));
       this.createBullet(gunPos, targetPos);
     }
   }
 
   handleHit(target) {
     let zombieInstance = null;
-    console.log(target);
 
-    // Traverse upwards to find the object with `zombieInstance`
     let obj = target;
     while (obj && !obj.userData.zombieInstance) {
-      obj = obj.parent;
+        obj = obj.parent;
     }
 
-    // If we found an object with `zombieInstance`, it's a zombie
     if (obj && obj.userData.zombieInstance) {
-      zombieInstance = obj.userData.zombieInstance;
-      console.log("Hit a zombie!");
-      zombieInstance.takeDamage(10); // Apply damage
-    } else {
-      console.log("Target hit, but not a zombie:", target);
+        zombieInstance = obj.userData.zombieInstance;
+        
+        // Since each zombie now has its own material, this will only affect the hit zombie
+        const originalColor = target.material.color.clone();
+        target.material.color.setHex(0xff0000);
+
+        setTimeout(() => {
+            target.material.color.copy(originalColor);
+        }, 100);
+
+        console.log("Hit a zombie!");
+        zombieInstance.takeDamage(10);
     }
-
-    const originalMaterial = target.material.clone();
-    target.material.color.setHex(0xff0000);
-
-    setTimeout(() => {
-      target.material.copy(originalMaterial);
-    }, 100);
 
     const hitEvent = new CustomEvent("targetHit", {
-      detail: { target },
+        detail: { target }
     });
     document.dispatchEvent(hitEvent);
-  }
+}
 
   dispose() {
     document.removeEventListener("click", this.shoot);
