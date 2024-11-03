@@ -15,13 +15,14 @@ export class ShootingMechanism {
     this.gunOffset = new THREE.Vector3(3, -3.2, -10);
 
     //Flashlight
-    this.flashlight = new THREE.SpotLight(0xffffff, 10, 100, Math.PI*0.2, 0,0);
+    this.flashlight = new THREE.SpotLight(0xffffff, 10, 100, Math.PI*0.4, 0,0);
     this.camera.add(this.flashlight);
     this.camera.add(this.flashlight.target);
-        // this.flashlight.target.position.z = -15;
+    
     const crosshairWorldPos = new THREE.Vector3();
     this.crosshair.getWorldPosition(crosshairWorldPos);
-    this.flashlight.target.position.copy(crosshairWorldPos);
+    this.flashlight.target.position.set(0, 0, -1); 
+
     
         // Add crosshair to camera
     this.camera.add(this.crosshair);
