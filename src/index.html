@@ -121,6 +121,49 @@
         border: 1px solid rgba(255, 215, 0, 0.3);
       }
 
+      .controls-dropdown {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.controls-content {
+  display: none;
+  position: absolute;
+  background: rgba(0, 0, 0, 0.9);
+  width: 100%;
+  padding: 20px;
+  border: 2px solid #ffd700;
+  border-radius: 10px;
+  margin-top: 10px;
+  color: white;
+  z-index: 1000;
+}
+
+.controls-content h3 {
+  color: #ffd700;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.control-group {
+  margin-bottom: 15px;
+}
+
+.control-group h4 {
+  color: #c41e3a;
+  margin-bottom: 8px;
+}
+
+.control-group p {
+  margin: 5px 0;
+  padding-left: 10px;
+}
+
+.show {
+  display: block;
+}
+
       /* Animation Canvas */
       #menu-animation {
         position: absolute;
@@ -518,6 +561,26 @@
                         </button> -->
             <button class="menu-button" onclick="showCredits()">Credits</button>
           </div>
+          <div class="controls-dropdown">
+            <button class="menu-button" onclick="toggleControls()">How To Play</button>
+            <div id="controls-content" class="controls-content">
+              <h3>Game Controls</h3>
+              <div class="control-group">
+                <h4>Movement Keys:</h4>
+                <p>W - Move Forward</p>
+                <p>S - Move Backward</p>
+                <p>A - Move Left</p>
+                <p>D - Move Right</p>
+              </div>
+              <div class="control-group">
+                <h4>Aiming:</h4>
+                <p>↑ - Aim Up</p>
+                <p>↓ - Aim Down</p>
+                <p>← - Aim Left</p>
+                <p>→ - Aim Right</p>
+              </div>
+            </div>
+          </div>
 
           <!-- <div class="game-info">
                         <div class="info-section">
@@ -592,6 +655,7 @@
         Save & Close
       </button>
     </div> -->
+    
 
     <!-- Story/Loading Screens -->
     <div id="chapter1" class="loading-screen">
@@ -752,6 +816,10 @@
         </div>
       </div>
     </div>
+    window.toggleControls = function() {
+    const content = document.getElementById("controls-content");
+    content.classList.toggle("show");
+};
 
     <!-- Scripts -->
     <script type="importmap">
@@ -829,6 +897,11 @@
           creditsContainer.style.display = "none";
         });
       };
+
+      window.toggleControls = function() {
+    const content = document.getElementById("controls-content");
+    content.classList.toggle("show");
+};
       // Menu Animation Setup
       const canvas = document.getElementById("menu-animation");
       const renderer = new THREE.WebGLRenderer({
@@ -857,6 +930,7 @@
       window.addEventListener("resize", resizeCanvas);
       resizeCanvas();
 
+      
       // Add lighting
       const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
       directionalLight.position.set(0, -10, 26);
