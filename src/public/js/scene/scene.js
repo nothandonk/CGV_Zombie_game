@@ -137,11 +137,11 @@ class Scene {
     //this.ambientLight = new THREE.AmbientLight(0x404040);
     //this.scene.add(this.ambientLight);
 
-    this.ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.07);
+    this.ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
     this.scene.add(this.ambient);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
-    this.directionalLight = new THREE.DirectionalLight(0x00008b, 0.07);
+    this.directionalLight = new THREE.DirectionalLight(0x00008b, 1);
     this.directionalLight.position.set(0, 100, 10);
     this.directionalLight.castShadow = true;
     this.directionalLight.shadow.mapSize.width = 4096; // Larger shadow map
@@ -155,7 +155,7 @@ class Scene {
     this.directionalLight.shadow.camera.far = 5000;
     this.directionalLight.shadow.bias = -0.001;
     this.directionalLight.shadow.normalBias = 0.02;
-    this.scene.add(new THREE.CameraHelper(this.directionalLight.shadow.camera))
+    //this.scene.add(new THREE.CameraHelper(this.directionalLight.shadow.camera))
     this.scene.add(this.directionalLight);
 
     this.scene.fog = new THREE.FogExp2(0x11111f,0.002);
@@ -280,8 +280,8 @@ class Scene {
     //this.loadWall();
     this.loadtree();
     this.loadtree2();
-    this.loadshortwalls();
-    this.loadwallset();
+    //this.loadshortwalls();
+    //this.loadwallset();
     //this.loadwallsetl();
     //this.loadshopmall();
     this.loadstreetlight();
@@ -291,9 +291,9 @@ class Scene {
     //this.loadZombie();
     //this.loadstairtower();
     this.loadambulance();
-    this.loadbushes();
-    this.loadwater();
-    this.loadwatertank();
+    
+    // this.loadwater();
+    // this.loadwatertank();
     this.gameState.startNewWave();
 
     this.animate();
@@ -432,13 +432,13 @@ class Scene {
     let scene;
     gltfLoader.load("/streetlight.glb", (gltf) => {
       scene = gltf.scene;
-        scene.scale.set(0.5, 0.5, 0.1);
+        scene.scale.set(0.5, 0.5, 0.5);
         scene.position.set(300, 0, 200);
         this.scene.add(scene);
 
         // Create a PointLight
         const pointLight = new THREE.PointLight(
-            0x1fc600,  // color (same green as before)
+          0xffb81c,  // color (same green as before)
             1000,         // intensity
             200,       // distance (0 = infinite)
             2
@@ -464,13 +464,13 @@ class Scene {
     let scene;
     gltfLoader.load("/streetlight.glb", (gltf) => {
       scene = gltf.scene;
-        scene.scale.set(0.5, 0.5, 0.1);
+        scene.scale.set(0.5, 0.5, 0.5);
         scene.position.set(300, 0, -210);
         this.scene.add(scene);
 
         // Create a PointLight
         const pointLight = new THREE.PointLight(
-            0x1fc600,  // color (same green as before)
+          0xffb81c,  // color (same green as before)
             1000,         // intensity
             200,       // distance (0 = infinite)
             2
@@ -496,13 +496,13 @@ class Scene {
     let scene;
     gltfLoader.load("/streetlight.glb", (gltf) => {
       scene = gltf.scene;
-        scene.scale.set(0.5, 0.5, 0.1);
+        scene.scale.set(0.5, 0.5, 0.5);
         scene.position.set(-300, 0, -210);
         this.scene.add(scene);
 
         // Create a PointLight
         const pointLight = new THREE.PointLight(
-            0x1fc600,  // color (same green as before)
+            0xffb81c,  // color (same green as before)
             1000,         // intensity
             200,       // distance (0 = infinite)
             2
@@ -528,13 +528,13 @@ class Scene {
     let scene;
     gltfLoader.load("/streetlight.glb", (gltf) => {
       scene = gltf.scene;
-        scene.scale.set(0.5, 0.5, 0.1);
+        scene.scale.set(0.5, 0.5, 0.5);
         scene.position.set(-300, 0, 210);
         this.scene.add(scene);
 
         // Create a PointLight
         const pointLight = new THREE.PointLight(
-            0x1fc600,  // color (same green as before)
+            0xffb81c,  // color (same green as before)
             1000,         // intensity
             200,       // distance (0 = infinite)
             2
@@ -716,75 +716,59 @@ class Scene {
   loadShakaZulu() {
     const gltfLoader = new GLTFLoader();
     let scene;
+    
+    // Create spotlight before loading model
+    const spotLight = new THREE.SpotLight(0xffb81c, 10030); // High intensity for visible beam
+    spotLight.position.set(0, 200, 0); // Positioned at an angle for better visibility
+    spotLight.angle = Math.PI / 6; // 30 degrees cone
+    spotLight.penumbra = 0.2; // Soft edges
+    spotLight.decay = 1.5; // Physical light decay
+    spotLight.distance = 500; // Maximum range
+    
+    // Shadow configuration
+    spotLight.castShadow = true;
+    spotLight.shadow.mapSize.width = 2048;
+    spotLight.shadow.mapSize.height = 2048;
+    spotLight.shadow.camera.near = 10;
+    spotLight.shadow.camera.far = 1000;
+    spotLight.shadow.focus = 1;
+    
+    // Static target for the spotlight
+    const targetObject = new THREE.Object3D();
+    targetObject.position.set(0, 0, 0); // Points at the center
+    this.scene.add(targetObject);
+    spotLight.target = targetObject;
+    
+    // Add spotlight to scene
+    this.scene.add(spotLight);
+    
+    // Visual helper to see the spotlight cone (can be removed in production)
+    const spotLightHelper = new THREE.SpotLightHelper(spotLight);
+    this.scene.add(spotLightHelper);
+    
+    // Load the model
     gltfLoader.load("/zulu.glb", (gltf) => {
       scene = gltf.scene;
-      scene.scale.set(70, 70, 100); // Adjust scale if needed
-      scene.position.set(0, 0, 0); // Position th
-      scene.rotation.y = Math.PI/2 ;
+      scene.scale.set(70, 70, 100);
+      scene.position.set(0, 0, 0);
+      scene.rotation.y = Math.PI / 2;
+      
       scene.traverse((child) => {
         if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
+          if (child.material) {
+            child.material.metalness = 0.5;
+            child.material.roughness = 0.5;
+          }
         }
       });
+      
       this.scene.add(scene);
-
-      const spotlight = new THREE.SpotLight(0xffff00); // White light
-      spotlight.position.set(0, 2, 0); // Set the position of the spotlight
-      spotlight.rotation.x = Math.PI;
-      spotlight.angle = Math.PI / 6; // Spotlight angle
-      spotlight.penumbra = 0.2; // Soft edges
-      spotlight.decay = 2; // How quickly the light fades
-      spotlight.distance = 100; // Distance the light travels
-      spotlight.intensity = 100; // Initial intensity
-
-      // Set the spotlight's target (the point the spotlight points at)
-      // const targetObject = new THREE.Object3D(); // Create an empty object as target
-      // targetObject.position.set(0, 0, 0); // Set target position
-      // scene.add(targetObject);
-      // spotlight.target = targetObject; // Set the spotlight target
-      this.scene.add(spotlight); // Add the spotlight to the scene
-
-      const spotLightHelper = new THREE.SpotLightHelper(spotlight);
-      scene.add(spotLightHelper);
-
-      // Flickering effect
-      let flickerState = 1; // 1 means full brightness, 0 means no brightness
-      setInterval(() => {
-          flickerState = flickerState === 1 ? 0 : 1; // Toggle flicker state
-          spotlight.intensity = flickerState; // Set spotlight intensity
-      }, 5000);
-
-      //const boundingBox = new THREE.Box3().setFromObject(scene);
-
-      // Add the tower and its bounding box to the objects to check for collision
-      //this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
     });
   }
-
-  loadbushes(){
-      // Create a mesh
-      const geometry = new THREE.SphereGeometry(1, 16, 16);
-      const material = new THREE.MeshStandardMaterial({ color: "#89c85e" });
-      let bush = new THREE.Mesh(geometry, material);
-      
-      // Set initial transform
-      bush.scale.set(20, 20, 20);
-      bush.position.set(900, 0, 250);
-      
-      bush.rotation.y =Math.PI;
-      
-      // Set up shadows
-      bush.castShadow = true;
-      bush.receiveShadow = true;
-      
-      // Add to scene
-      this.scene.add(bush);
-      
-      // Optionally, if you want collision detection like in your Shaka Zulu model:
-      // const boundingBox = new THREE.Box3().setFromObject(bush);
-      // this.objectsToCheck.push({ object: bush, boundingBox: boundingBox });
-  }
+  
+  
 
   loadBodybag() {
     const gltfLoader = new GLTFLoader();
@@ -809,21 +793,10 @@ class Scene {
       false,
       false,
     );
+
   }
 
-  loadshopmall(){
-    const gltfLoader = new GLTFLoader();
-    let bodybag = new GLTFObject(
-      "/shopping_mall.glb",
-      [-200, 0, 200],
-      [0, 0, 0],
-      [10, 10, 10],
-      this,
-      false,
-      false,
-    );
-  }
-
+ 
   loadambulance(){
     const gltfLoader = new GLTFLoader();
     let bodybag = new GLTFObject(
@@ -873,85 +846,15 @@ class Scene {
   }
 
   
-  // initSky() {
-  //   this.sky = new Sky();
-  //   this.sky.scale.setScalar(2000);
-  //   this.sky.material.uniforms['turbidity'].value = 10;
-  //   this.sky.material.uniforms['rayleigh'].value = 3;
-  //   this.sky.material.uniforms['mieCoefficient'].value = 0.08;
-  //   this.sky.material.uniforms['mieDirectionalG'].value = 0.8;
-  
-  //   this.sunPosition = new THREE.Vector3();
-  //   this.sky.material.uniforms['sunPosition'].value.copy(this.sunPosition);
-  //   this.scene.add(this.sky);
-  //   this.directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-  //   this.directionalLight.castShadow = true;
-  //   this.directionalLight.position.set(0, 10, 500); // Initial position for sunrise
-  //   this.scene.add(this.directionalLight);
-  //   // Begin the animation for sunrise to sunset
-  //   this.createSunAnimation();
-  // }
-  
-  // createSunAnimation() {
-  //   const duration = 100000; // Duration for a full sunrise-to-sunset cycle in ms
-  //   const radius = 2000; // Radius of sun path
-  //   const height = 1000; // Height at which sun moves
-
-  //   const animateSun = () => {
-  //       const elapsed = (Date.now() % duration) / duration; // Cycle through 0 to 1
-  //       const angle = Math.PI * elapsed; // Map to sunrise-to-sunset angle range
-
-  //       // Calculate x, y, z positions for the sun’s arc
-  //       const x = radius * Math.cos(angle);
-  //       const z = radius * Math.sin(angle);
-  //       const y = height * Math.sin(angle); // Adds a slight arc effect
-
-  //       // Update directional light and sky sun position
-  //       this.directionalLight.position.set(x, y, z);
-  //       this.sky.material.uniforms['sunPosition'].value.copy(this.directionalLight.position);
-
-  //       requestAnimationFrame(animateSun);
-  //   };
-
-  //   animateSun(); // Start the animation
-  // } 
+ 
   generateTerrain() {
     const noise = new Noise(Math.random());
     const width = 2000;
     const depth = 2000;
     const widthSegments = 2000;
     const depthSegments = 2000;
-
-    // //skybox
-    // const textureLoader = new THREE.TextureLoader();
-    // const skyboxGeometry = new THREE.BoxGeometry(width, depth, depth);
-    // const skyboxMaterial = new THREE.MeshBasicMaterial({
-    //   map: textureLoader.load("http://localhost:3000/skybox/WORK.png"),
-    //   side: THREE.BackSide,
-    //   transparent: true,
-    // });
-   
-
-    // const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
-    // this.scene.add(skybox);
-
-    //SkyDome
      const textureLoader = new THREE.TextureLoader();
-  //   const cloudTexture = textureLoader.load("http://localhost:3000/skybox/overcast.png"); // Path to your cloud texture
-    
-  //   // Create a hemisphere geometry
-  //   const skyDomeGeometry = new THREE.SphereGeometry(width, depth, depth, 0, Math.PI * 2, 0, Math.PI / 2);
-  //   const skyDomeMaterial = new THREE.MeshBasicMaterial({
-  //       map: cloudTexture,
-  //       side: THREE.BackSide, // Render the inside of the dome
-  //       transparent: true,
-  //   });
-    
-  //   const skyDome = new THREE.Mesh(skyDomeGeometry, skyDomeMaterial);
-  //  // skyDome.position.set(0, 2000, 0); // Position it high above the scene
-    
-  //   this.scene.add(skyDome);
-
+  
   // Sky setup using Sky.js
   const sky = new Sky();
   sky.scale.setScalar(2000);
