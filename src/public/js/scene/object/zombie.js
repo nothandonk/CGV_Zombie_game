@@ -29,15 +29,113 @@ class Zombie {
     this.animations = {};
     this.currentAction = null;
 
-    //path finding details
+    // path finding details
     this.path = null;
     this.currentPathIndex = 0;
     this.pathUpdateInterval = 2000;
     this.lastPathUpdate = 0;
     this.pathVisualization = null;
+
+    // Reset audio properties
+    this.listener = null;
+    this.zombieSound = null;
+    this.audioLoaded = false;
+    
+    // Initialize audio with higher volume and closer reference distance
+    this.setupAudio();
         
     this.setAttributesBasedOnType();
+    this.init();
     }
+
+    setupAudio() {
+        // Create a new listener if one doesn't exist
+        if (!this.camera.userData.audioListener) {
+          this.listener = new THREE.AudioListener();
+          this.camera.add(this.listener);
+          this.camera.userData.audioListener = this.listener;
+          console.log('New audio listener created');
+        } else {
+          this.listener = this.camera.userData.audioListener;
+          console.log('Using existing audio listener');
+        }
+    
+        // Create and configure positional audio with debug logging
+        this.zombieSound = new THREE.PositionalAudio(this.listener);
+        console.log('Zombie position:', this.position);
+        console.log('Camera position:', this.camera.position);
+      }
+
+      init() {
+        this.loadZombieSound();
+        
+        if (this.listener && this.listener.context) {
+          console.log('Initial AudioContext state:', this.listener.context.state);
+        }
+    
+        const resumeAudioContext = async () => {
+          try {
+            if (this.listener && this.listener.context && this.listener.context.state === 'suspended') {
+              await this.listener.context.resume();
+              console.log('AudioContext resumed successfully');
+              
+              if (this.audioLoaded && this.zombieSound && !this.zombieSound.isPlaying) {
+                this.zombieSound.play();
+                console.log('Zombie sound started playing after context resume');
+              }
+            }
+          } catch (error) {
+            console.error('Error resuming audio context:', error);
+          }
+        };
+    
+        ['click', 'touchstart', 'keydown'].forEach(eventType => {
+          window.addEventListener(eventType, resumeAudioContext, { once: true });
+        });
+      }
+
+      loadZombieSound() {
+        const audioLoader = new THREE.AudioLoader();
+        
+        audioLoader.load(
+          "./audio/zombieSound.mp3",
+          (buffer) => {
+            if (!this.zombieSound) {
+              console.error('PositionalAudio not initialized');
+              return;
+            }
+    
+            try {
+              this.zombieSound.setBuffer(buffer);
+              // Increase reference distance and volume
+              this.zombieSound.setRefDistance(100); // Reduced from 100 to make sound more audible
+              this.zombieSound.setLoop(true);
+              this.zombieSound.setVolume(0.4); // Increased from 0.4 to maximum
+              this.zombieSound.setDistanceModel('linear'); // Changed to linear for more gradual falloff
+              this.zombieSound.setRolloffFactor(0.5); // Reduced rolloff for wider audible range
+              this.audioLoaded = true;
+    
+              if (this.listener.context.state === 'running') {
+                this.zombieSound.play();
+                console.log('Sound playing:', {
+                  isPlaying: this.zombieSound.isPlaying,
+                  volume: this.zombieSound.getVolume(),
+                  distance: this.zombieSound.getRefDistance(),
+                  position: this.model ? this.model.position : this.position
+                });
+              }
+            } catch (error) {
+              console.error('Error setting up zombie sound:', error);
+            }
+          },
+          (progress) => {
+            console.log('Loading audio:', (progress.loaded / progress.total * 100).toFixed(2) + '%');
+          },
+          (error) => {
+            console.error("Error loading zombie sound:", error);
+          }
+        );
+      }
 
   loadModel(modelPath) {
     // Check if model is already in cache
@@ -98,13 +196,10 @@ class Zombie {
     this.model.position.set(this.position.x, this.position.y, this.position.z);
     this.model.scale.set(20, 20, 20);
     
-    // Clone materials for each zombie instance
     this.model.traverse((child) => {
         if (child.isMesh) {
-            // Create a unique material clone for each mesh
             child.material = child.material.clone();
             child.userData.zombieInstance = this;
-            // Add each mesh as a target for shooting
             this.shooter.addTarget(child);
         }
     });
@@ -125,7 +220,8 @@ class Zombie {
         }
     }
 
-    // Enable shadows
+    console.log(this.animations)
+
     this.model.traverse((child) => {
         if (child.isMesh) {
             child.castShadow = true;
@@ -165,14 +261,13 @@ class Zombie {
 
   playAnimation(name, speed = 0.6) {
     if (this.currentAction && this.currentAction !== this.animations[name]) {
-      // Only fade out if it's a different action
       this.currentAction.crossFadeTo(this.animations[name], 0.5, false);
     }
 
     this.currentAction = this.animations[name];
 
     if (this.currentAction) {
-      this.currentAction.reset().fadeIn(0.5).play(); // Fade in the new action
+      this.currentAction.reset().fadeIn(0.5).play();
       this.currentAction.timeScale = speed;
     }
   }
@@ -221,6 +316,21 @@ update(delta) {
     if (this.mixer) {
         this.mixer.update(delta);
     }
+
+    // Update audio position with the zombie
+    if (this.zombieSound && this.model) {
+        // Add position debugging every few frames
+        if (Math.random() < 0.05) { // Log roughly every 20 frames
+          const distanceToCamera = this.model.position.distanceTo(this.camera.position);
+          console.log('Audio debug:', {
+            distanceToCamera,
+            zombiePosition: this.model.position.clone(),
+            cameraPosition: this.camera.position.clone(),
+            isPlaying: this.zombieSound.isPlaying,
+            context: this.listener.context.state
+          });
+        }
+      }
 
     if (this.model) {
         // Get terrain height at current position
@@ -352,10 +462,8 @@ update(delta) {
     console.log(`Zombie hit! Current health: ${this.health}`);
 
     if (this.health > 0) {
-      // Play taking damage animation
-      //this.playTakingDamageAnimation();
+      
     } else {
-      // If health reaches 0 or below, trigger death
       this.die();
     }
   }
@@ -367,6 +475,17 @@ update(delta) {
     this.world.gameState.killZombie();
     
     this.speed = 0;
+
+    if (this.zombieSound) {
+        try {
+          if (this.zombieSound.isPlaying) {
+            this.zombieSound.stop();
+          }
+          this.zombieSound.disconnect();
+        } catch (error) {
+          console.error('Error cleaning up zombie sound:', error);
+        }
+      }
     
     if (this.model) {
         this.model.traverse((child) => {
