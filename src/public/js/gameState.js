@@ -13,7 +13,7 @@ class GameState {
     // Wave management
     this.currentWave = 0;
     this.zombiesRemainingInWave = 0;
-    this.zombiesPerWave = 10;
+    this.zombiesPerWave = 5;
     this.killCount = 0;
     this.isGameOver = false;
 
@@ -24,7 +24,7 @@ class GameState {
     this.staminaText = document.getElementById("staminaText");
     this.waveCounter = document.getElementById("wave");
     this.zombieCounter = document.getElementById("zombies");
-    this.killCounter = document.getElementById("killCounter");
+    this.killCounter = document.getElementById("score");
     this.gameOverScreen = document.getElementById("game-over-overlay");
     this.finalScore = document.getElementById("score");
     this.waveCompleteScreen = document.getElementById(
@@ -33,6 +33,8 @@ class GameState {
     this.nextWaveButton = document.getElementById("next-level-button");
 
     this.nextWaveButton.addEventListener("click", () => {
+      document.exitPointerLock(); // Exit pointer lock
+      this.world.mouseControls = false;
       this.waveCompleteScreen.style.display = "none";
       this.world.startChapterLoading();
     });
@@ -71,13 +73,12 @@ class GameState {
       this.zombieCounter.textContent = `${this.zombiesRemainingInWave}`;
     }
     if (this.killCounter) {
-      this.killCounter.textContent = `Kills: ${this.killCount}`;
+      this.killCounter.textContent = `${this.killCount}`;
     }
 
     // Update game over screen if necessary
     if (this.isGameOver) {
       this.gameOverScreen.style.display = "flex";
-      this.finalScore.textContent = `Final Score: ${this.killCount} kills`;
     }
   }
 
@@ -120,7 +121,7 @@ class GameState {
           y: normalizedY,
           rotation: -rotation.y, // Use Y rotation for 2D minimap
         },
-        enemies: this.world.shooter.getTargets().map((target) => ({
+        enemies: this.world.shooter.markedTargets.map((target) => ({
           x: (target.position.x + worldWidth / 2) / worldWidth,
           y: (target.position.z + worldHeight / 2) / worldHeight,
         })),
@@ -178,13 +179,13 @@ class GameState {
   }
 
   _getRandomNumber() {
-    return Math.floor(Math.random() * 4001) - 2000;
+    return Math.floor(Math.random() * 2001) - 1000;
   }
 
   startNewWave() {
     this.currentWave++;
     this.zombiesRemainingInWave =
-      this.zombiesPerWave + (this.currentWave - 1) * 20;
+      this.zombiesPerWave + (this.currentWave - 1) * 10;
     if (this.waveCompleteScreen) {
       this.waveCompleteScreen.style.display = "none";
     }
@@ -208,7 +209,7 @@ class GameState {
       if (this.zombiesRemainingInWave === 0) {
         if (this.waveCompleteScreen) {
           this.waveCompleteScreen.style.display = "flex";
-          this.world.this.currentChapter++;
+          this.world.currentChapter++;
         }
         return "wave_complete";
       }

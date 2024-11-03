@@ -6,6 +6,7 @@ import Zombie from "./object/zombie.js";
 import MiniMap from "../hud/minimap.js";
 import { ShootingMechanism } from "./shooting.js";
 import GameState from "../gameState.js";
+import { NavigationMesh, PathFinder } from "./object/zombiePathFinding.js";
 
 class Scene {
   constructor() {
@@ -144,6 +145,9 @@ class Scene {
     this.objectsToCheck = [];
     this.playerBoundingBox = new THREE.Box3();
 
+    this.navMesh = new NavigationMesh(this);
+    this.pathFinder = new PathFinder(this.navMesh);
+
     this.shooter = new ShootingMechanism(this);
     this.totalGameAssets = 0;
     this.loadedGameAssets = 0;
@@ -193,6 +197,13 @@ class Scene {
   }
 
   async init() {
+    this.debug = false; // Set to true to see collision boxes
+
+    if (this.debug) {
+      this.helper = new YUKA.EntityManager();
+      // Visualize paths and steering
+  }
+
     //this needs to load after world has loaded for some reasons idk
     this.startChapterLoading();
     this.initializeRainAndLighting();
@@ -215,6 +226,22 @@ class Scene {
     this.animate2();
   }
 
+  addCollidableObject(object) {
+    const boundingBox = new THREE.Box3().setFromObject(object);
+    
+    // Add the object and its bounding box to the objects to check for collision
+    this.objectsToCheck.push({
+        object: object,
+        boundingBox: boundingBox
+    });
+
+    // Debug visualization
+    if (this.debug) {
+        const boxHelper = new THREE.Box3Helper(boundingBox, 0x00ff00);
+        this.scene.add(boxHelper);
+    }
+}
+
   loadBuildings() {
     const gltfLoader = new GLTFLoader();
     let scene;
@@ -224,10 +251,7 @@ class Scene {
       scene.position.set(-250, 0, 800); // Position th
       this.scene.add(scene);
 
-      const boundingBox = new THREE.Box3().setFromObject(scene);
-
-      // Add the tower and its bounding box to the objects to check for collision
-      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
+      this.addCollidableObject(scene);
     });
   }
   loadBuild() {
@@ -240,10 +264,7 @@ class Scene {
       fact.rotation.y = Math.PI / 2;
       this.scene.add(fact);
 
-      const boundingBox = new THREE.Box3().setFromObject(fact);
-
-      // Add the tower and its bounding box to the objects to check for collision
-      this.objectsToCheck.push({ object: fact, boundingBox: boundingBox });
+      this.addCollidableObject(fact);
     });
   }
   loadpath() {
@@ -265,8 +286,7 @@ class Scene {
       scene.scale.set(0.4, 0.4, 0.4); // Adjust scale if needed
       scene.position.set(-90, 0, 200); // Position thxv
       this.scene.add(scene);
-      const boundingBox = new THREE.Box3().setFromObject(scene);
-      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
+      this.addCollidableObject(scene);
     });
   }
 
@@ -363,13 +383,10 @@ class Scene {
     gltfLoader.load("/gravestones.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(10, 10, 10); // Adjust scale if needed
-      scene.position.set(0, 0, -280); // Position th
+      scene.position.set(0, 0, -150); // Position th
       this.scene.add(scene);
 
-      const boundingBox = new THREE.Box3().setFromObject(scene);
-
-      // Add the tower and its bounding box to the objects to check for collision
-      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
+      this.addCollidableObject(scene);
     });
   }
   loadPlayer() {
