@@ -314,7 +314,7 @@ class Scene {
     //this.loadWall();
     this.loadtree();
     this.loadtree2();
- 
+    this.loadShakaZulu();
     //this.loadwallsetl();
     //this.loadshopmall();
     this.loadstreetlight();
@@ -324,7 +324,7 @@ class Scene {
     //this.loadZombie();
     //this.loadstairtower();
     this.loadambulance();
-    this.loadbushes();
+    
     // this.loadwater();
 
     this.animate();
@@ -761,49 +761,55 @@ class Scene {
   loadShakaZulu() {
     const gltfLoader = new GLTFLoader();
     let scene;
+    
+    // Create spotlight before loading model
+    const spotLight = new THREE.SpotLight(0xffb81c, 10030); // High intensity for visible beam
+    spotLight.position.set(0, 200, 0); // Positioned at an angle for better visibility
+    spotLight.angle = Math.PI / 6; // 30 degrees cone
+    spotLight.penumbra = 0.2; // Soft edges
+    spotLight.decay = 1.5; // Physical light decay
+    spotLight.distance = 500; // Maximum range
+    
+    // Shadow configuration
+    spotLight.castShadow = true;
+    spotLight.shadow.mapSize.width = 2048;
+    spotLight.shadow.mapSize.height = 2048;
+    spotLight.shadow.camera.near = 10;
+    spotLight.shadow.camera.far = 1000;
+    spotLight.shadow.focus = 1;
+    
+    // Static target for the spotlight
+    const targetObject = new THREE.Object3D();
+    targetObject.position.set(0, 0, 0); // Points at the center
+    this.scene.add(targetObject);
+    spotLight.target = targetObject;
+    
+    // Add spotlight to scene
+    this.scene.add(spotLight);
+    
+    // Visual helper to see the spotlight cone (can be removed in production)
+    const spotLightHelper = new THREE.SpotLightHelper(spotLight);
+    this.scene.add(spotLightHelper);
+    
+    // Load the model
     gltfLoader.load("/zulu.glb", (gltf) => {
       scene = gltf.scene;
-      scene.scale.set(70, 70, 100); // Adjust scale if needed
-      scene.position.set(0, 0, 0); // Position th
-      scene.rotation.y = Math.PI/2 ;
+      scene.scale.set(70, 70, 100);
+      scene.position.set(0, 0, 0);
+      scene.rotation.y = Math.PI / 2;
+      
       scene.traverse((child) => {
         if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
+          if (child.material) {
+            child.material.metalness = 0.5;
+            child.material.roughness = 0.5;
+          }
         }
       });
+      
       this.scene.add(scene);
-
-      const spotlight = new THREE.SpotLight(0xffff00); // White light
-      spotlight.position.set(0, 2, 0); // Set the position of the spotlight
-      spotlight.rotation.x = Math.PI;
-      spotlight.angle = Math.PI / 6; // Spotlight angle
-      spotlight.penumbra = 0.2; // Soft edges
-      spotlight.decay = 2; // How quickly the light fades
-      spotlight.distance = 100; // Distance the light travels
-      spotlight.intensity = 100; // Initial intensity
-
-      // Set the spotlight's target (the point the spotlight points at)
-      // const targetObject = new THREE.Object3D(); // Create an empty object as target
-      // targetObject.position.set(0, 0, 0); // Set target position
-      // scene.add(targetObject);
-      // spotlight.target = targetObject; // Set the spotlight target
-      this.scene.add(spotlight); // Add the spotlight to the scene
-
-      const spotLightHelper = new THREE.SpotLightHelper(spotlight);
-      scene.add(spotLightHelper);
-
-      // Flickering effect
-      let flickerState = 1; // 1 means full brightness, 0 means no brightness
-      setInterval(() => {
-          flickerState = flickerState === 1 ? 0 : 1; // Toggle flicker state
-          spotlight.intensity = flickerState; // Set spotlight intensity
-      }, 5000);
-
-      //const boundingBox = new THREE.Box3().setFromObject(scene);
-
-      // Add the tower and its bounding box to the objects to check for collision
-      //this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
     });
   }
 
