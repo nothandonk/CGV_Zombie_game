@@ -292,7 +292,7 @@ class Scene {
     //this.loadstairtower();
     this.loadambulance();
     this.loadbushes();
-    this.loadwater();
+    // this.loadwater();
     this.loadwatertank();
     this.gameState.startNewWave();
 
