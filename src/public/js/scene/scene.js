@@ -221,7 +221,7 @@ class Scene {
     this.directionalLight.shadow.camera.far = 5000;
     this.directionalLight.shadow.bias = -0.001;
     this.directionalLight.shadow.normalBias = 0.02;
-    this.scene.add(new THREE.CameraHelper(this.directionalLight.shadow.camera));
+   // this.scene.add(new THREE.CameraHelper(this.directionalLight.shadow.camera));
     this.scene.add(this.directionalLight);
 
     this.scene.fog = new THREE.FogExp2(0x11111f, 0.002);
@@ -855,7 +855,7 @@ class Scene {
       this.scene.add(spotlight); // Add the spotlight to the scene
 
       const spotLightHelper = new THREE.SpotLightHelper(spotlight);
-      scene.add(spotLightHelper);
+     // scene.add(spotLightHelper);
 
       // Flickering effect
       let flickerState = 1; // 1 means full brightness, 0 means no brightness
