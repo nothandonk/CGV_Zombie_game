@@ -201,8 +201,9 @@ class Zombie {
             child.material = child.material.clone();
             child.userData.zombieInstance = this;
             this.shooter.addTarget(child);
-        }
-    });
+          }
+        });
+    this.shooter.addToMinimap(this.model)
 
     this.boundingBox = new THREE.Box3().setFromObject(this.model);
         
@@ -493,6 +494,7 @@ update(delta) {
                 this.shooter.removeTarget(child);
             }
         });
+        this.shooter.removeFromMinimap(this.model)
     }
 
     if (this.animations['dying']) {
