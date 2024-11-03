@@ -29,7 +29,7 @@ export class ShootingMechanism {
    // Gunshot sound setup
    this.gunshotSound = new THREE.Audio(this.listener);
    this.audioLoader = new THREE.AudioLoader();
-   this.audioLoader.load('/audio/pewpew.mp3', (buffer) => {
+   this.audioLoader.load('/public/audio/pewpew.mp3', (buffer) => {
    this.gunshotSound.setBuffer(buffer);
    this.gunshotSound.setVolume(0.5); // Adjust volume as needed
   });
