@@ -138,7 +138,7 @@ class Scene {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.directionalLight = new THREE.DirectionalLight(0x00008b, 1);
-    this.directionalLight.position.set(0, 100, 10);
+    this.directionalLight.position.set(0, 10, -10);
     this.directionalLight.castShadow = true;
     this.directionalLight.shadow.mapSize.width = 4096; // Larger shadow map
     this.directionalLight.shadow.mapSize.height = 4096;
@@ -265,10 +265,9 @@ class Scene {
     this.loadTower();
     this.loadGarage();
     this.loadBodybag();
-    //this.loadShakaZulu();
+    this.loadShakaZulu();
     this.loadHospital();
     this.loadBuild();
-    //this.loadCone();
     this.loadcar();
     this.loadHospital();
    // this.loadTombstone();
@@ -276,7 +275,7 @@ class Scene {
     this.loadWall();
     this.loadtree();
     this.loadtree2();
-    //this.loadshortwalls();
+    this.loadshortwalls();
     this.loadwallset();
     this.loadwallsetl();
     //this.loadstreetlight();
@@ -425,9 +424,9 @@ this.scene.add(stairs);
   const textureLoader = new THREE.TextureLoader();
 
   // Load brick texture
-  const brickTexture = textureLoader.load('/worn_brick_floor_diff_2k.jpg', (texture) => {
+  const brickTexture = textureLoader.load('/road.jpg', (texture) => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(2, 1);
+      texture.repeat.set(20, 10);
   });
 
   // Create shader material
@@ -694,16 +693,33 @@ this.scene.add(stairs);
   }
   loadGarage() {
     const gltfLoader = new GLTFLoader();
-    let bodybag = new GLTFObject(
-      "/gas_station.glb",
-      [-800, -10, -800],
-      [0, Math.PI, 0],
-      [15, 15, 15],
-      this,
-      false,
-      false,
+    gltfLoader.load(
+        "/gas_station.glb",
+        (gltf) => {
+            // Access the loaded scene from the GLTF model
+            let bodybagScene = gltf.scene;
+            bodybagScene.position.set(-800, -10, -800);
+            bodybagScene.rotation.y = Math.PI;
+            bodybagScene.scale.set(15, 15, 15);
+            this.scene.add(bodybagScene);
+
+            // Traverse the scene to add bounding boxes to each mesh
+            bodybagScene.traverse((child) => {
+                if (child.isMesh) {
+                  child.castShadow = true;
+                  child.receiveShadow = true;
+                }
+
+            });
+            const boundingBox = new THREE.Box3().setFromObject(bodybagScene);
+            this.objectsToCheck.push({ object: bodybagScene, boundingBox: boundingBox });
+        },
+        undefined,
+        (error) => {
+            console.error("Error loading GLB model:", error);
+        }
     );
-  }
+}
 
   loadbusstop(){
     const gltfLoader = new GLTFLoader();
@@ -748,15 +764,6 @@ this.scene.add(stairs);
   loadPlayer() {
     // Load the 3D Gun Model using GLTFLoader
     const gltfLoader = new GLTFLoader();
-    // const gun = gltfLoader.load(
-    //   "/rovelver1.0.0.glb",
-    //   (gltf) => {
-    //     const gunModel = gltf.scene;
-    //     gunModel.scale.set(0.5, 0.5, 0.5); // Adjust scale if needed
-    //     gunModel.position.set(0, 5, 0); // Position the gun in the center
-    //     gunModel;
-    //     this.scene.add(gunModel);
-    //   },
     const gun = gltfLoader.load(
       "/remington1100.glb",
       (gltf) => {
@@ -775,14 +782,7 @@ this.scene.add(stairs);
     );
   }
 
-  loadRain(){
-    const rainGeometry = new THREE.CylinderGeometry(1,1,1,4,1,true);
-    let oldRainGeometryScale = 1;
-
-    const rainMaterial = extendMaterial(THREE.MeshLambertMaterial,{
-      class: THREE.ShaderMaterial,
-    })
-  }
+  
   // initSky() {
   //   this.sky = new Sky();
   //   this.sky.scale.setScalar(2000);
@@ -896,7 +896,7 @@ this.scene.add(sky);
     geometry.computeVertexNormals();
     // Load the grass texture
     //const textureLoader = new THREE.TextureLoader();
-    const grassTexture = textureLoader.load("/thesoil.jpg"); // Path to your texture image
+    const grassTexture = textureLoader.load("/road.jpg"); // Path to your texture image
 
     // Optionally, adjust texture properties to repeat it
     grassTexture.wrapS = THREE.RepeatWrapping;
