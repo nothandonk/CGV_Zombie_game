@@ -1,6 +1,8 @@
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
 import { nanoid } from "https://cdn.jsdelivr.net/npm/nanoid/nanoid.js";
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
+import GameState from "../../gameState.js";
+
 
 export class GLTFObject {
   constructor(

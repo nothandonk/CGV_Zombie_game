@@ -9,6 +9,7 @@ class GameState {
     this.maxStamina = 100;
     this.isPlayerSprinting = false;
     this.world = world;
+    this.paused = false;
 
     // Wave management
     this.currentWave = 0;
@@ -24,7 +25,7 @@ class GameState {
     this.staminaText = document.getElementById("staminaText");
     this.waveCounter = document.getElementById("wave");
     this.zombieCounter = document.getElementById("zombies");
-    this.killCounter = document.getElementById("killCounter");
+    this.killCounter = document.getElementById("score");
     this.gameOverScreen = document.getElementById("game-over-overlay");
     this.finalScore = document.getElementById("score");
     this.waveCompleteScreen = document.getElementById(
@@ -33,6 +34,8 @@ class GameState {
     this.nextWaveButton = document.getElementById("next-level-button");
 
     this.nextWaveButton.addEventListener("click", () => {
+      document.exitPointerLock(); // Exit pointer lock
+      this.world.mouseControls = false;
       this.waveCompleteScreen.style.display = "none";
       this.world.startChapterLoading();
     });
@@ -71,13 +74,12 @@ class GameState {
       this.zombieCounter.textContent = `${this.zombiesRemainingInWave}`;
     }
     if (this.killCounter) {
-      this.killCounter.textContent = `Kills: ${this.killCount}`;
+      this.killCounter.textContent = `${this.killCount}`;
     }
 
     // Update game over screen if necessary
     if (this.isGameOver) {
       this.gameOverScreen.style.display = "flex";
-      this.finalScore.textContent = `Final Score: ${this.killCount} kills`;
     }
   }
 
@@ -260,6 +262,23 @@ class GameState {
 
   getCurrentWave() {
     return this.currentWave;
+  }
+  togglePause() {
+    this.paused = !this.paused; // Toggle the pause state
+    if (this.paused) {
+      console.log("Game is now paused.");
+      // this.scene.mouseControls = false;
+      // document.exitPointerLock();
+    } else {
+      // console.log("Game is now resumed.");
+      // this.scene.mouseControls = true; 
+      this.world.animate();  // Resume the game loop when unpausing
+      this.updateUI();
+    }
+  }
+
+  isPaused() {
+    return this.paused;  // Provide a method to check if the game is paused
   }
 }
 

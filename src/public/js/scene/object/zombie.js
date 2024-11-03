@@ -244,12 +244,12 @@ class Zombie {
             case 'fast':
                 this.speed = 0.6;
                 this.health = 150;
-                this.loadModel('zombie2.glb');
+                this.loadModel('/~smegagraphics/public/zombie2.glb');
                 break;
             case 'crawling':
                 this.speed = 0.5;
                 this.health = 200;
-                this.loadModel('zombie3.glb');
+                this.loadModel('/~smegagraphics/public/zombie3.glb');
                 break;
 
       default:
