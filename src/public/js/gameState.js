@@ -13,7 +13,7 @@ class GameState {
     // Wave management
     this.currentWave = 0;
     this.zombiesRemainingInWave = 0;
-    this.zombiesPerWave = 1;
+    this.zombiesPerWave = 5;
     this.killCount = 0;
     this.isGameOver = false;
 
@@ -184,7 +184,7 @@ class GameState {
   startNewWave() {
     this.currentWave++;
     this.zombiesRemainingInWave =
-      this.zombiesPerWave + (this.currentWave - 1) * 20;
+      this.zombiesPerWave + (this.currentWave - 1) * 10;
     if (this.waveCompleteScreen) {
       this.waveCompleteScreen.style.display = "none";
     }
