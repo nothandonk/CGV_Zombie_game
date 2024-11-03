@@ -15,8 +15,24 @@ export class ShootingMechanism {
     // Gun position relative to camera
     this.gunOffset = new THREE.Vector3(3, -3.2, -10);
 
-    // Add crosshair to camera
-    this.camera.add(this.crosshair);
+   //Flashlight
+   this.flashlight = new THREE.SpotLight(0xffffff, 10, 150, Math.PI/2, 0,0);
+   this.camera.add(this.flashlight);
+   this.camera.add(this.flashlight.target);
+   
+   
+   this.camera.add(this.crosshair);
+       // Add audio listener to the camera
+   this.listener = new THREE.AudioListener();
+   this.camera.add(this.listener);
+   
+   // Gunshot sound setup
+   this.gunshotSound = new THREE.Audio(this.listener);
+   this.audioLoader = new THREE.AudioLoader();
+   this.audioLoader.load('/audio/pewpew.mp3', (buffer) => {
+   this.gunshotSound.setBuffer(buffer);
+   this.gunshotSound.setVolume(0.5); // Adjust volume as needed
+  });
 
     // Shooting cooldown
     this.lastShot = 0;
@@ -236,7 +252,10 @@ export class ShootingMechanism {
       return;
     }
     this.lastShot = now;
-
+    if (this.gunshotSound.isPlaying) {
+      this.gunshotSound.stop();
+    }
+    this.gunshotSound.play();
     // Get camera direction and position
     const cameraPosition = this.camera.position.clone();
     const cameraDirection = new THREE.Vector3(0, 0, -1);
