@@ -137,8 +137,8 @@ class Scene {
     this.scene.add(this.ambient);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
-    this.directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    this.directionalLight.position.set(0, 10, 505);
+    this.directionalLight = new THREE.DirectionalLight(0x00008b, 1);
+    this.directionalLight.position.set(0, 100, 10);
     this.directionalLight.castShadow = true;
     this.directionalLight.shadow.mapSize.width = 4096; // Larger shadow map
     this.directionalLight.shadow.mapSize.height = 4096;
@@ -509,6 +509,16 @@ this.scene.add(stairs);
       scene = gltf.scene;
       scene.scale.set(20, 20, 20); // Adjust scale if needed
       scene.position.set(-250, 0, 800); // Position th
+      scene.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          // const boundingBox = new THREE.Box3().setFromObject(child);
+          // this.objectsToCheck.push({
+          //   mesh: child,
+          //   boundingBox: boundingBox});
+        }
+      });
       this.scene.add(scene);
 
       const boundingBox = new THREE.Box3().setFromObject(scene);
@@ -527,18 +537,28 @@ this.scene.add(stairs);
       fact.scale.set(25, 25, 25);
       fact.position.set(-600, -5, 0);
       fact.rotation.y = Math.PI / 2;
+   
       fact.traverse((child) => {
         if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
+          // const boundingBox = new THREE.Box3().setFromObject(child);
+          // this.objectsToCheck.push({
+          //   mesh: child,
+          //   boundingBox: boundingBox});
         }
       });
+      
       this.scene.add(fact);
 
-      const boundingBox = new THREE.Box3().setFromObject(fact);
-
+      //const boundingBox = new THREE.Box3().setFromObject(fact);
+      // fact.traverse((child) => {
+      //   if (child.isMesh) {
+      //     child.objectsToCheck.push({object: fact, boundingBox: boundingBox});
+      //   }
+      // });
       // Add the tower and its bounding box to the objects to check for collision
-      this.objectsToCheck.push({ object: fact, boundingBox: boundingBox });
+     // this.objectsToCheck.push({ object: fact, boundingBox: boundingBox });
     });
   }
   loadCone() {
@@ -845,8 +865,8 @@ this.scene.add(stairs);
   // Sky setup using Sky.js
   const sky = new Sky();
   sky.scale.setScalar(2000);
-  sky.material.uniforms['turbidity'].value = 10;
-    sky.material.uniforms['rayleigh'].value = 3;
+  sky.material.uniforms['turbidity'].value = 0.1;
+    sky.material.uniforms['rayleigh'].value = 0.003;
     sky.material.uniforms['mieCoefficient'].value = 0.08;
     sky.material.uniforms['mieDirectionalG'].value = 0.8;
 
