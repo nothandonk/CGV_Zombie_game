@@ -157,11 +157,11 @@ class Scene {
     // this.ambientLight = new THREE.AmbientLight(0x404040);
     // this.scene.add(this.ambientLight);
 
-    this.ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.07);
+    this.ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
     this.scene.add(this.ambient);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
-    this.directionalLight = new THREE.DirectionalLight(0x00008b, 0.07);
+    this.directionalLight = new THREE.DirectionalLight(0x00008b, 1);
     this.directionalLight.position.set(0, 100, 10);
     this.directionalLight.castShadow = true;
     this.directionalLight.shadow.mapSize.width = 4096; // Larger shadow map
@@ -175,7 +175,7 @@ class Scene {
     this.directionalLight.shadow.camera.far = 5000;
     this.directionalLight.shadow.bias = -0.001;
     this.directionalLight.shadow.normalBias = 0.02;
-    this.scene.add(new THREE.CameraHelper(this.directionalLight.shadow.camera))
+    //this.scene.add(new THREE.CameraHelper(this.directionalLight.shadow.camera))
     this.scene.add(this.directionalLight);
 
     this.scene.fog = new THREE.FogExp2(0x11111f, 0.002);
@@ -479,13 +479,13 @@ class Scene {
     let scene;
     gltfLoader.load("/streetlight.glb", (gltf) => {
       scene = gltf.scene;
-        scene.scale.set(0.5, 0.5, 0.1);
+        scene.scale.set(0.5, 0.5, 0.5);
         scene.position.set(300, 0, 200);
         this.scene.add(scene);
 
         // Create a PointLight
         const pointLight = new THREE.PointLight(
-            0x1fc600,  // color (same green as before)
+            0xffb81c,  // color (same green as before)
             1000,         // intensity
             200,       // distance (0 = infinite)
             2
@@ -494,7 +494,7 @@ class Scene {
         this.scene.add(pointLight);
 
         // If you want to visualize the light (optional)
-        const lightHelper = new THREE.PointLightHelper(pointLight);
+        //const lightHelper = new THREE.PointLightHelper(pointLight);
         //this.scene.add(lightHelper);
 
         // Bounding box for collision check
@@ -510,13 +510,13 @@ class Scene {
     let scene;
     gltfLoader.load("/streetlight.glb", (gltf) => {
       scene = gltf.scene;
-        scene.scale.set(0.5, 0.5, 0.1);
+        scene.scale.set(0.5, 0.5, 0.5);
         scene.position.set(300, 0, -210);
         this.scene.add(scene);
 
         // Create a PointLight
         const pointLight = new THREE.PointLight(
-            0x1fc600,  // color (same green as before)
+          0xffb81c,  // color (same green as before)
             1000,         // intensity
             200,       // distance (0 = infinite)
             2
@@ -525,7 +525,7 @@ class Scene {
         this.scene.add(pointLight);
 
         // If you want to visualize the light (optional)
-        const lightHelper = new THREE.PointLightHelper(pointLight);
+        //const lightHelper = new THREE.PointLightHelper(pointLight);
         //this.scene.add(lightHelper);
 
         // Bounding box for collision check
@@ -541,13 +541,13 @@ class Scene {
     let scene;
     gltfLoader.load("/streetlight.glb", (gltf) => {
       scene = gltf.scene;
-        scene.scale.set(0.5, 0.5, 0.1);
+        scene.scale.set(0.5, 0.5, 0.5);
         scene.position.set(-300, 0, -210);
         this.scene.add(scene);
 
         // Create a PointLight
         const pointLight = new THREE.PointLight(
-            0x1fc600,  // color (same green as before)
+          0xffb81c,  // color (same green as before)
             1000,         // intensity
             200,       // distance (0 = infinite)
             2
@@ -556,7 +556,7 @@ class Scene {
         this.scene.add(pointLight);
 
         // If you want to visualize the light (optional)
-        const lightHelper = new THREE.PointLightHelper(pointLight);
+        //const lightHelper = new THREE.PointLightHelper(pointLight);
         //this.scene.add(lightHelper);
 
         // Bounding box for collision check
@@ -572,13 +572,13 @@ class Scene {
     let scene;
     gltfLoader.load("/streetlight.glb", (gltf) => {
       scene = gltf.scene;
-        scene.scale.set(0.5, 0.5, 0.1);
+        scene.scale.set(0.5, 0.5, 0.5);
         scene.position.set(-300, 0, 210);
         this.scene.add(scene);
 
         // Create a PointLight
         const pointLight = new THREE.PointLight(
-            0x1fc600,  // color (same green as before)
+          0xffb81c,  // color (same green as before)
             1000,         // intensity
             200,       // distance (0 = infinite)
             2
@@ -587,7 +587,7 @@ class Scene {
         this.scene.add(pointLight);
 
         // If you want to visualize the light (optional)
-        const lightHelper = new THREE.PointLightHelper(pointLight);
+        //const lightHelper = new THREE.PointLightHelper(pointLight);
         //this.scene.add(lightHelper);
 
         // Bounding box for collision check
@@ -788,8 +788,8 @@ class Scene {
     this.scene.add(spotLight);
     
     // Visual helper to see the spotlight cone (can be removed in production)
-    const spotLightHelper = new THREE.SpotLightHelper(spotLight);
-    this.scene.add(spotLightHelper);
+   // const spotLightHelper = new THREE.SpotLightHelper(spotLight);
+    //this.scene.add(spotLightHelper);
     
     // Load the model
     gltfLoader.load("/zulu.glb", (gltf) => {
