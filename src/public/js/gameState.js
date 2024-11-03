@@ -33,6 +33,8 @@ class GameState {
     this.nextWaveButton = document.getElementById("next-level-button");
 
     this.nextWaveButton.addEventListener("click", () => {
+      document.exitPointerLock(); // Exit pointer lock
+      this.world.mouseControls = false;
       this.waveCompleteScreen.style.display = "none";
       this.world.startChapterLoading();
     });
