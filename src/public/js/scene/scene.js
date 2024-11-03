@@ -314,8 +314,7 @@ class Scene {
     //this.loadWall();
     this.loadtree();
     this.loadtree2();
-    this.loadshortwalls();
-    this.loadwallset();
+ 
     //this.loadwallsetl();
     //this.loadshopmall();
     this.loadstreetlight();
