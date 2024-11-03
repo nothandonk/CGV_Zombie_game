@@ -10,6 +10,7 @@ export class ShootingMechanism {
     this.crosshair = this.createCrosshair();
     this.projectiles = [];
     this.gameState = world.gameState;
+    this.markedTargets = []
 
     // Gun position relative to camera
     this.gunOffset = new THREE.Vector3(3, -3.2, -10);
@@ -204,6 +205,17 @@ export class ShootingMechanism {
       // Update the target's matrixWorld
       target.updateMatrixWorld(true);
       this.targets.push(target);
+    }
+  }
+
+  addToMinimap(target) {
+      this.markedTargets.push(target);
+  }
+
+  removeFromMinimap(target) {
+    const index = this.markedTargets.indexOf(target);
+    if (index > -1) {
+      this.markedTargets.splice(index, 1);
     }
   }
 

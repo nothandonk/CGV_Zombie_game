@@ -13,7 +13,7 @@ class GameState {
     // Wave management
     this.currentWave = 0;
     this.zombiesRemainingInWave = 0;
-    this.zombiesPerWave = 10;
+    this.zombiesPerWave = 1;
     this.killCount = 0;
     this.isGameOver = false;
 
@@ -120,7 +120,7 @@ class GameState {
           y: normalizedY,
           rotation: -rotation.y, // Use Y rotation for 2D minimap
         },
-        enemies: this.world.shooter.getTargets().map((target) => ({
+        enemies: this.world.shooter.markedTargets.map((target) => ({
           x: (target.position.x + worldWidth / 2) / worldWidth,
           y: (target.position.z + worldHeight / 2) / worldHeight,
         })),
@@ -178,7 +178,7 @@ class GameState {
   }
 
   _getRandomNumber() {
-    return Math.floor(Math.random() * 4001) - 2000;
+    return Math.floor(Math.random() * 2001) - 1000;
   }
 
   startNewWave() {
@@ -208,7 +208,7 @@ class GameState {
       if (this.zombiesRemainingInWave === 0) {
         if (this.waveCompleteScreen) {
           this.waveCompleteScreen.style.display = "flex";
-          this.world.this.currentChapter++;
+          this.world.currentChapter++;
         }
         return "wave_complete";
       }
