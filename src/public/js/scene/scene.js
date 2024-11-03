@@ -8,6 +8,38 @@ import { ShootingMechanism } from "./shooting.js";
 import GameState from "../gameState.js";
 import { Sky } from 'three/addons/objects/Sky.js';
 
+// Vertex shader
+const vertexShader = `
+varying vec2 vUv;
+varying vec3 vNormal;
+
+void main() {
+    vUv = uv;
+    vNormal = normalize(normalMatrix * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+// Fragment shader with basic lighting
+const fragmentShader = `
+uniform sampler2D brickTexture;
+uniform vec3 lightPosition;
+
+varying vec2 vUv;
+varying vec3 vNormal;
+
+void main() {
+    vec3 lightDir = normalize(lightPosition);
+    float diffuse = max(dot(vNormal, lightDir), 0.0);
+    
+    vec4 textureColor = texture2D(brickTexture, vUv);
+    vec3 ambient = textureColor.rgb * 0.3;
+    vec3 finalColor = ambient + textureColor.rgb * diffuse;
+    
+    gl_FragColor = vec4(finalColor, 1.0);
+}
+`;
+
 class Scene {
   constructor() {
     this.scene = new THREE.Scene();
@@ -229,21 +261,27 @@ class Scene {
 
  
     this.loadBuildings();
-    this.loadGravestones();
+    
     this.loadTower();
     this.loadGarage();
     this.loadBodybag();
-    this.loadShakaZulu();
+    //this.loadShakaZulu();
     this.loadHospital();
     this.loadBuild();
-    this.loadCone();
+    //this.loadCone();
     this.loadcar();
     this.loadHospital();
    // this.loadTombstone();
     this.loadTombstoneTwo();
     this.loadWall();
+    this.loadtree();
+    this.loadtree2();
+    //this.loadshortwalls();
+    this.loadwallset();
+    this.loadwallsetl();
+    //this.loadstreetlight();
     //this.loadZombie();
- 
+    //this.loadstairtower();
     this.gameState.startNewWave();
 
     this.animate();
@@ -252,10 +290,217 @@ class Scene {
     //this.initSky();
   }
 
+  loadstairtower(){
+    // Tower structure
+const towerGeometry = new THREE.CylinderGeometry(5, 5, 20, 32);
+const towerMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+const tower = new THREE.Mesh(towerGeometry, towerMaterial);
+this.scene.add(tower);
 
+// Create spiral stairs
+function createStairs() {
+    const stairsGroup = new THREE.Group();
+    const stepsCount = 20;
+    const radiusStart = 2;
+    const heightStep = 0.8;
+    const angleStep = (Math.PI * 2) / (stepsCount / 2);
 
+    for (let i = 0; i < stepsCount; i++) {
+        const stepGeometry = new THREE.BoxGeometry(2, 0.2, 0.8);
+        const stepMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513 });
+        const step = new THREE.Mesh(stepGeometry, stepMaterial);
 
+        // Position each step in a spiral
+        const angle = i * angleStep;
+        const radius = radiusStart;
+        const height = i * heightStep;
 
+        step.position.x = Math.cos(angle) * radius;
+        step.position.y = height - 8; // Start from bottom of tower
+        step.position.z = Math.sin(angle) * radius;
+
+        // Rotate step to face center
+        step.rotation.y = -angle;
+
+        stairsGroup.add(step);
+    }
+    return stairsGroup;
+}
+
+const stairs = createStairs();
+stairs.scale(5,5,5);
+stairs.position(0,0,0);
+this.scene.add(stairs);
+  }
+
+  loadtree() {
+    const gltfLoader = new GLTFLoader();
+    let scene;
+    gltfLoader.load("/dark_tree_-_dol_guldur.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(5, 5, 5); // Adjust scale if needed
+      scene.position.set(750, 0, 700); // Position thxv
+      //700, 0, -300
+      scene.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      this.scene.add(scene);
+      const boundingBox = new THREE.Box3().setFromObject(scene);
+      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
+    });
+  }
+
+  loadtree2() {
+    const gltfLoader = new GLTFLoader();
+    let scene;
+    gltfLoader.load("/dark_tree_-_dol_guldur.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(5, 5, 5); // Adjust scale if needed
+      scene.position.set(-750, 0, 700); // Position thxv
+      //700, 0, -300
+      scene.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      this.scene.add(scene);
+      const boundingBox = new THREE.Box3().setFromObject(scene);
+      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
+    });
+  }
+
+  loadwallset() {
+    const gltfLoader = new GLTFLoader();
+    let scene;
+    gltfLoader.load("/stone_bricks_beige_wall-set.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(100, 100, 100); // Adjust scale if needed
+      scene.position.set(-930, 0, 350); // Position thxv
+      scene.rotation.y = Math.PI / 2;
+      //700, 0, -300
+      scene.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      this.scene.add(scene);
+      const boundingBox = new THREE.Box3().setFromObject(scene);
+      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
+    });
+  }loadwallsetl() {
+    const gltfLoader = new GLTFLoader();
+    let scene;
+    gltfLoader.load("/stone_bricks_beige_wall-set.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(100, 100, 100); // Adjust scale if needed
+      scene.position.set(400, -10, 950); // Position thxv
+      scene.rotation.y = -Math.PI ;
+      //700, 0, -300
+      scene.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      this.scene.add(scene);
+      const boundingBox = new THREE.Box3().setFromObject(scene);
+      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
+    });
+  }
+
+  loadshortwalls(){
+    
+  //let wall;
+    // Create half wall geometry
+  const wallGeometry = new THREE.BoxGeometry(4, 2, 0.3);
+  const textureLoader = new THREE.TextureLoader();
+
+  // Load brick texture
+  const brickTexture = textureLoader.load('/worn_brick_floor_diff_2k.jpg', (texture) => {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(2, 1);
+  });
+
+  // Create shader material
+  const wallMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+          brickTexture: { value: brickTexture },
+          lightPosition: { value: new THREE.Vector3(5, 5, 5) }
+      },
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader
+  });
+
+  // Create mesh
+  const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+  wall.scale.set(150, 50, 20);
+  wall.position.set(300, 0, 950);
+  this.scene.add(wall);
+
+  // Add light
+  //
+  //scene.add(light);
+
+  //this.scene.add(scene);
+  }
+
+  loadstreetlight() {
+    const gltfLoader = new GLTFLoader();
+    let scene;
+    gltfLoader.load("/brazilian_streetlight.glb", (gltf) => {
+      scene = gltf.scene;
+      scene.scale.set(20, 20, 20); // Adjust scale if needed
+      scene.position.set(250, 0, 50); // Position th
+      this.scene.add(scene);
+    // Use SpotLight instead for directional light
+    const distance = 0;
+    const angle = 4;
+    const penumbra = 0.6;
+    const decay = 0;
+    const spotLight = new THREE.SpotLight(
+      0x1fc600,
+      2,
+      distance,
+      Math.PI / angle,
+      penumbra,
+      decay,
+    );
+    spotLight.position.set(860, 700, -12);
+    // const light = new THREE.SpotLight(0xff0000, 5, 200, Math.PI / 4, 0.5, 2);
+    // light.position.set(250, 100, 50); // Position the light
+    //spotLight.target.position.set(250, 0, 50); // Aim at the streetlight
+    this.scene.add(spotLight);
+    //this.scene.add(spotLight.target); // Required to set the spotlight direction
+
+    //Optionally, add a helper to visualize the light
+    const lightHelper = new THREE.SpotLightHelper(spotLight);
+    this.scene.add(lightHelper);
+
+    // // Enable shadows if needed
+    // light.castShadow = true;
+    // light.shadow.mapSize.width = 512;
+    // light.shadow.mapSize.height = 512;
+    // light.shadow.camera.near = 0.5;
+    // light.shadow.camera.far = 500;
+
+    // Bounding box for collision check
+    const boundingBox = new THREE.Box3().setFromObject(scene);
+    this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
+
+    // Log the scene dimensions
+    const box = new THREE.Box3().setFromObject(this.scene);
+    console.log("Scene size:", box.getSize(new THREE.Vector3()));
+    });
+  }
 
   loadBuildings() {
     const gltfLoader = new GLTFLoader();
@@ -277,7 +522,7 @@ class Scene {
   loadBuild() {
     const loader = new GLTFLoader();
     let fact;
-    loader.load("/abandoned_barn.glb", (gltf) => {
+    loader.load("/building.glb", (gltf) => {
       fact = gltf.scene;
       fact.scale.set(25, 25, 25);
       fact.position.set(-600, -5, 0);
@@ -339,6 +584,7 @@ class Scene {
 }
 
 
+
   loadTower() {
     const gltfLoader = new GLTFLoader();
     let tower = new GLTFObject(
@@ -351,6 +597,7 @@ class Scene {
       false,
     );
   }
+
 
   loadTombstone() {
     const gltfLoader = new GLTFLoader();
@@ -438,6 +685,32 @@ class Scene {
     );
   }
 
+  loadbusstop(){
+    const gltfLoader = new GLTFLoader();
+    let bodybag = new GLTFObject(
+      "/bus_stop.glb",
+      [20, 0, -50],
+      [0, Math.PI, 0],
+      [15, 15, 15],
+      this,
+      false,
+      false,
+    );
+  }
+
+  loadambulance(){
+    const gltfLoader = new GLTFLoader();
+    let bodybag = new GLTFObject(
+      "/gas_station.glb",
+      [800, 0, -200],
+      [0, Math.PI, 0],
+      [15, 15, 15],
+      this,
+      false,
+      false,
+    );
+  }
+
   loadHospital() {
     const gltfLoader = new GLTFLoader();
     let hospital = new GLTFObject(
@@ -451,21 +724,7 @@ class Scene {
     );
   }
 
-  loadGravestones() {
-    const gltfLoader = new GLTFLoader();
-    let scene;
-    gltfLoader.load("/playground.glb", (gltf) => {
-      scene = gltf.scene;
-      scene.scale.set(10, 10, 10); // Adjust scale if needed
-      scene.position.set(0, 0, -280); // Position th
-      this.scene.add(scene);
 
-      const boundingBox = new THREE.Box3().setFromObject(scene);
-
-      // Add the tower and its bounding box to the objects to check for collision
-      this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
-    });
-  }
   loadPlayer() {
     // Load the 3D Gun Model using GLTFLoader
     const gltfLoader = new GLTFLoader();
