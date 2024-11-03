@@ -272,8 +272,6 @@ class Scene {
     this.loadShakaZulu();
     this.loadHospital();
     this.loadBuild();
-    //this.loadCone();
-    //this.loadcar();
     this.loadHospital();
    // this.loadTombstone();
     this.loadTombstoneTwo();
@@ -287,7 +285,7 @@ class Scene {
     this.loadstreetlight();
     this.loadstreetlight2();
     this.loadstreetlight3();
-    this.loadstreetlight4()
+    this.loadstreetlight4();
     //this.loadZombie();
     //this.loadstairtower();
     this.loadambulance();
@@ -299,7 +297,7 @@ class Scene {
     this.animate();
     this.animate2();
     this.animateRain();
-    //this.initSky();
+    
   }
 
  
@@ -366,7 +364,8 @@ class Scene {
       const boundingBox = new THREE.Box3().setFromObject(scene);
       this.objectsToCheck.push({ object: scene, boundingBox: boundingBox });
     });
-  }loadwallsetl() {
+  }
+  loadwallsetl() {
     const gltfLoader = new GLTFLoader();
     let scene;
     gltfLoader.load("/stone_bricks_beige_wall-set.glb", (gltf) => {
@@ -434,6 +433,12 @@ class Scene {
       scene = gltf.scene;
         scene.scale.set(0.5, 0.5, 0.5);
         scene.position.set(300, 0, 200);
+        scene.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
         this.scene.add(scene);
 
         // Create a PointLight
@@ -466,6 +471,12 @@ class Scene {
       scene = gltf.scene;
         scene.scale.set(0.5, 0.5, 0.5);
         scene.position.set(300, 0, -210);
+        scene.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
         this.scene.add(scene);
 
         // Create a PointLight
@@ -498,6 +509,12 @@ class Scene {
       scene = gltf.scene;
         scene.scale.set(0.5, 0.5, 0.5);
         scene.position.set(-300, 0, -210);
+        scene.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
         this.scene.add(scene);
 
         // Create a PointLight
@@ -530,6 +547,12 @@ class Scene {
       scene = gltf.scene;
         scene.scale.set(0.5, 0.5, 0.5);
         scene.position.set(-300, 0, 210);
+        scene.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
         this.scene.add(scene);
 
         // Create a PointLight
@@ -793,7 +816,7 @@ class Scene {
       false,
       false,
     );
-
+    
   }
 
  
