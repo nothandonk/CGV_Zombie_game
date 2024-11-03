@@ -9,6 +9,7 @@ class GameState {
     this.maxStamina = 100;
     this.isPlayerSprinting = false;
     this.world = world;
+    this.paused = false;
 
     // Wave management
     this.currentWave = 0;
@@ -261,6 +262,23 @@ class GameState {
 
   getCurrentWave() {
     return this.currentWave;
+  }
+  togglePause() {
+    this.paused = !this.paused; // Toggle the pause state
+    if (this.paused) {
+      console.log("Game is now paused.");
+      // this.scene.mouseControls = false;
+      // document.exitPointerLock();
+    } else {
+      // console.log("Game is now resumed.");
+      // this.scene.mouseControls = true; 
+      this.world.animate();  // Resume the game loop when unpausing
+      this.updateUI();
+    }
+  }
+
+  isPaused() {
+    return this.paused;  // Provide a method to check if the game is paused
   }
 }
 

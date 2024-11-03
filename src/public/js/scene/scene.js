@@ -97,6 +97,25 @@ class Scene {
     this.secondCamera.rotation.z = Math.PI;
     this.secondCamera.logarithmicDepthBuffer = true;
 
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "p") {
+        this.gameState.togglePause();
+        const pauseOverlay = document.getElementById("pause-overlay");
+        const resumeButton = document.getElementById("resume-button");
+       
+        if (this.gameState.isPaused()) {
+          pauseOverlay.classList.remove("hidden"); // Show pause overlay
+        } 
+        else {
+          pauseOverlay.classList.add("hidden");   // Hide pause overlay
+          resumeButton.addEventListener("click", (e) => {
+            this.gameState.togglePause();
+            pauseOverlay.classList.add("hidden");   // Hide pause overlay
+
+          }); }
+      }
+    });
+
     // Set up lights
     // this.ambientLight = new THREE.AmbientLight(0x404040);
     // this.scene.add(this.ambientLight);
@@ -988,6 +1007,8 @@ class Scene {
   }
 
   animate = () => {
+    if (this.gameState.isPaused()){
+      return;} 
     requestAnimationFrame(this.animate);
     // if (this.rain && this.flash) {
     //   this.updateRainAndLighting();
@@ -1011,6 +1032,8 @@ class Scene {
   };
 
   animate2 = () => {
+    if (this.gameState.isPaused()){
+      return;} 
     requestAnimationFrame(this.animate2); // Fix: Was calling this.animate instead of this.animate2
 
     // Update second camera position to follow main camera from above

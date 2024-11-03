@@ -25,6 +25,54 @@
         overflow: hidden;
       }
 
+      #pause-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(
+          0,
+          0,
+          0,
+          0.7
+        ); /* Semi-transparent black background */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 3500; /* Ensure it's above everything */
+      }
+
+      #pause-overlay.hidden {
+        display: none; /* Hidden by default */
+      }
+
+      /* Pause message styling */
+      #pause-message {
+        text-align: center;
+        color: white;
+      }
+
+      #pause-message h1 {
+        font-size: 4em;
+        margin-bottom: 20px;
+      }
+
+      #pause-message button {
+        padding: 10px 20px;
+        font-size: 1.5em;
+        cursor: pointer;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+
+      #pause-message button:hover {
+        background-color: #218838;
+      }
+
       /* Enhanced Start Menu Styles */
       #start-menu {
         position: fixed;
@@ -122,47 +170,47 @@
       }
 
       .controls-dropdown {
-  position: relative;
-  display: inline-block;
-  width: 100%;
-}
+        position: relative;
+        display: inline-block;
+        width: 100%;
+      }
 
-.controls-content {
-  display: none;
-  position: absolute;
-  background: rgba(0, 0, 0, 0.9);
-  width: 100%;
-  padding: 20px;
-  border: 2px solid #ffd700;
-  border-radius: 10px;
-  margin-top: 10px;
-  color: white;
-  z-index: 1000;
-}
+      .controls-content {
+        display: none;
+        position: absolute;
+        background: rgba(0, 0, 0, 0.9);
+        width: 100%;
+        padding: 20px;
+        border: 2px solid #ffd700;
+        border-radius: 10px;
+        margin-top: 10px;
+        color: white;
+        z-index: 1000;
+      }
 
-.controls-content h3 {
-  color: #ffd700;
-  margin-bottom: 15px;
-  text-align: center;
-}
+      .controls-content h3 {
+        color: #ffd700;
+        margin-bottom: 15px;
+        text-align: center;
+      }
 
-.control-group {
-  margin-bottom: 15px;
-}
+      .control-group {
+        margin-bottom: 15px;
+      }
 
-.control-group h4 {
-  color: #c41e3a;
-  margin-bottom: 8px;
-}
+      .control-group h4 {
+        color: #c41e3a;
+        margin-bottom: 8px;
+      }
 
-.control-group p {
-  margin: 5px 0;
-  padding-left: 10px;
-}
+      .control-group p {
+        margin: 5px 0;
+        padding-left: 10px;
+      }
 
-.show {
-  display: block;
-}
+      .show {
+        display: block;
+      }
 
       /* Animation Canvas */
       #menu-animation {
@@ -562,7 +610,9 @@
             <button class="menu-button" onclick="showCredits()">Credits</button>
           </div>
           <div class="controls-dropdown">
-            <button class="menu-button" onclick="toggleControls()">How To Play</button>
+            <button class="menu-button" onclick="toggleControls()">
+              How To Play
+            </button>
             <div id="controls-content" class="controls-content">
               <h3>Game Controls</h3>
               <div class="control-group">
@@ -655,7 +705,6 @@
         Save & Close
       </button>
     </div> -->
-    
 
     <!-- Story/Loading Screens -->
     <div id="chapter1" class="loading-screen">
@@ -816,6 +865,12 @@
       </div>
     </div>
 
+    <div id="pause-overlay" class="hidden">
+      <div id="pause-message">
+        <h1>Game Paused</h1>
+        <button id="resume-button">Resume</button>
+      </div>
+    </div>
 
     <!-- Scripts -->
     <script type="importmap">
@@ -894,10 +949,10 @@
         });
       };
 
-      window.toggleControls = function() {
-    const content = document.getElementById("controls-content");
-    content.classList.toggle("show");
-};
+      window.toggleControls = function () {
+        const content = document.getElementById("controls-content");
+        content.classList.toggle("show");
+      };
       // Menu Animation Setup
       const canvas = document.getElementById("menu-animation");
       const renderer = new THREE.WebGLRenderer({
@@ -926,7 +981,6 @@
       window.addEventListener("resize", resizeCanvas);
       resizeCanvas();
 
-      
       // Add lighting
       const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
       directionalLight.position.set(0, -10, 26);
