@@ -227,14 +227,14 @@ class Scene {
     this.scene.fog = new THREE.FogExp2(0x11111f, 0.002);
     this.renderer.setClearColor(this.scene.fog.color);
 
-    // Add world axes helper
-    const worldAxesHelper = new THREE.AxesHelper(50);
-    this.scene.add(worldAxesHelper);
+    // // Add world axes helper
+    // const worldAxesHelper = new THREE.AxesHelper(50);
+    // this.scene.add(worldAxesHelper);
 
-    // Add player axes helper
-    this.playerAxesHelper = new THREE.AxesHelper(5);
+    // // Add player axes helper
+    // this.playerAxesHelper = new THREE.AxesHelper(5);
 
-    this.scene.add(this.playerAxesHelper);
+    // this.scene.add(this.playerAxesHelper);
 
     // Set up controls
     this.setupControls();
@@ -328,12 +328,7 @@ class Scene {
   }
 
   async init() {
-    this.debug = false; // Set to true to see collision boxes
-
-    if (this.debug) {
-      this.helper = new YUKA.EntityManager();
-      // Visualize paths and steering
-    }
+   
 
     this.startChapterLoading();
     // this.initializeRainAndLighting();
@@ -386,11 +381,6 @@ class Scene {
       boundingBox: boundingBox,
     });
 
-    // Debug visualization
-    if (this.debug) {
-      const boxHelper = new THREE.Box3Helper(boundingBox, 0x00ff00);
-      this.scene.add(boxHelper);
-    }
   }
 
   loadtree() {
@@ -1453,8 +1443,8 @@ class Scene {
     }
 
     // Update player axes helper
-    this.playerAxesHelper.position.copy(this.camera.position);
-    this.playerAxesHelper.rotation.copy(this.camera.rotation);
+    // this.playerAxesHelper.position.copy(this.camera.position);
+    // this.playerAxesHelper.rotation.copy(this.camera.rotation);
 
     // Update player bounding box
     this.playerBoundingBox.setFromCenterAndSize(
