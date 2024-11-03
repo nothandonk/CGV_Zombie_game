@@ -110,7 +110,7 @@ class Scene {
      const audioLoader = new THREE.AudioLoader();
  
      // Load a sound file and set it to play every 20 seconds
-     audioLoader.load("/public/audio/crow.mp3", (buffer) => {
+     audioLoader.load("/~smegagraphics/public/audio/crow.mp3", (buffer) => {
        sound.setBuffer(buffer);
        sound.setLoop(false); // Not looping, as we will handle replaying it
        sound.setVolume(1.0);
@@ -129,7 +129,7 @@ class Scene {
 
      const sound2 = new THREE.Audio(listener);
        // Load a sound file and set it to play every 20 seconds
-       audioLoader.load("/public/audio/wind.mp3", (buffer) => {
+       audioLoader.load("/~smegagraphics/public/audio/wind.mp3", (buffer) => {
         sound2.setBuffer(buffer);
         sound2.setLoop(true); // Not looping, as we will handle replaying it
         sound2.setVolume(.6);
@@ -138,7 +138,7 @@ class Scene {
 
       const sound3 = new THREE.Audio(listener);
        // Load a sound file and set it to play every 20 seconds
-       audioLoader.load("/public/audio/chimes.mp3", (buffer) => {
+       audioLoader.load("/~smegagraphics/public/audio/chimes.mp3", (buffer) => {
         sound3.setBuffer(buffer);
         sound3.setLoop(true); // Not looping, as we will handle replaying it
         sound3.setVolume(.6);
@@ -386,7 +386,7 @@ class Scene {
   loadtree() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/public/dark_tree_-_dol_guldur.glb", (gltf) => {
+    gltfLoader.load("/~smegagraphics/public/dark_tree_-_dol_guldur.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(2, 5, 5); // Adjust scale if needed
       scene.position.set(400, 0, 500); // Position thxv
@@ -407,7 +407,7 @@ class Scene {
   loadtree2() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/public/dark_tree_-_dol_guldur.glb", (gltf) => {
+    gltfLoader.load("/~smegagraphics/public/dark_tree_-_dol_guldur.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(5, 5, 5); // Adjust scale if needed
       scene.position.set(-750, 0, 700); // Position thxv
@@ -428,7 +428,7 @@ class Scene {
   loadwallset() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/public/stone_bricks_beige_wall-set.glb", (gltf) => {
+    gltfLoader.load("/~smegagraphics/public/stone_bricks_beige_wall-set.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(100, 100, 100); // Adjust scale if needed
       scene.position.set(-930, 0, 350); // Position thxv
@@ -449,7 +449,7 @@ class Scene {
   loadwallsetl() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/public/stone_bricks_beige_wall-set.glb", (gltf) => {
+    gltfLoader.load("/~smegagraphics/public/stone_bricks_beige_wall-set.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(100, 100, 100); // Adjust scale if needed
       scene.position.set(400, -10, 950); // Position thxv
@@ -475,7 +475,7 @@ class Scene {
     const textureLoader = new THREE.TextureLoader();
 
     // Load brick texture
-    const brickTexture = textureLoader.load("/public/road.jpg", (texture) => {
+    const brickTexture = textureLoader.load("/~smegagraphics/public/road.jpg", (texture) => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
       texture.repeat.set(20, 10);
     });
@@ -509,7 +509,7 @@ class Scene {
   loadstreetlight() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/public/streetlight.glb", (gltf) => {
+    gltfLoader.load("/~smegagraphics/public/streetlight.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(0.5, 0.5, 0.1);
       scene.position.set(300, 0, 200);
@@ -540,7 +540,7 @@ class Scene {
   loadstreetlight2() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/public/streetlight.glb", (gltf) => {
+    gltfLoader.load("/~smegagraphics/public/streetlight.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(0.5, 0.5, 0.1);
       scene.position.set(300, 0, -210);
@@ -571,7 +571,7 @@ class Scene {
   loadstreetlight3() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/public/streetlight.glb", (gltf) => {
+    gltfLoader.load("/~smegagraphics/public/streetlight.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(0.5, 0.5, 0.1);
       scene.position.set(-300, 0, -210);
@@ -602,7 +602,7 @@ class Scene {
   loadstreetlight4() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/public/streetlight.glb", (gltf) => {
+    gltfLoader.load("/~smegagraphics/public/streetlight.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(0.5, 0.5, 0.1);
       scene.position.set(-300, 0, 210);
@@ -634,7 +634,7 @@ class Scene {
   loadBuildings() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/public/house.glb", (gltf) => {
+    gltfLoader.load("/~smegagraphics/public/house.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(20, 20, 20); // Adjust scale if needed
       scene.position.set(-250, 0, 800); // Position th
@@ -661,7 +661,7 @@ class Scene {
   loadBuild() {
     const loader = new GLTFLoader();
     let fact;
-    loader.load("/public/building.glb", (gltf) => {
+    loader.load("/~smegagraphics/public/building.glb", (gltf) => {
       fact = gltf.scene;
       fact.scale.set(25, 25, 25);
       fact.position.set(-600, -5, 0);
@@ -686,7 +686,7 @@ class Scene {
   loadpath() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/public/way_path_blocks.glb", (gltf) => {
+    gltfLoader.load("/~smegagraphics/public/way_path_blocks.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(600, 200, 0); // Adjust scale if needed
       scene.position.set(550, -100, 0); // Position th
@@ -711,7 +711,7 @@ class Scene {
   loadcar() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/public/old_car_wreck.glb", (gltf) => {
+    gltfLoader.load("/~smegagraphics/public/old_car_wreck.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(0.4, 0.4, 0.4); // Adjust scale if needed
       scene.position.set(-90, -1, 200); // Position thxv
@@ -738,7 +738,7 @@ class Scene {
   loadTower() {
     const gltfLoader = new GLTFLoader();
     let tower = new GLTFObject(
-      "/public/old_soviet_radio_tower.glb",
+      "/~smegagraphics/public/old_soviet_radio_tower.glb",
       [800, 0, 0],
       [0, Math.PI, 0],
       [0.5, 0.5, 0.5],
@@ -751,7 +751,7 @@ class Scene {
   loadTombstone() {
     const gltfLoader = new GLTFLoader();
     let ambulance = new GLTFObject(
-      "/public/tombstone_set__1.glb",
+      "/~smegagraphics/public/tombstone_set__1.glb",
       [700, 0, 0],
       [0, 0, 0],
       [50, 50, 50],
@@ -763,7 +763,7 @@ class Scene {
   loadTombstoneTwo() {
     const gltfLoader = new GLTFLoader();
     let ambulance = new GLTFObject(
-      "/public/tombstone_set__1.glb",
+      "/~smegagraphics/public/tombstone_set__1.glb",
       [700, 0, -300],
       [0, 0, 0],
       [50, 50, 50],
@@ -776,7 +776,7 @@ class Scene {
   loadWall() {
     const gltfLoader = new GLTFLoader();
     let wall = new GLTFObject(
-      "/public/wall_08.glb",
+      "/~smegagraphics/public/wall_08.glb",
       [750, 0, 800],
       [0, Math.PI / 2, 0],
       [10, 20, 20],
@@ -819,7 +819,7 @@ class Scene {
     //this.scene.add(spotLightHelper);
     
     // Load the model
-    gltfLoader.load("/public/zulu.glb", (gltf) => {
+    gltfLoader.load("/~smegagraphics/public/zulu.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(70, 70, 100);
       scene.position.set(0, 0, 0);
@@ -898,7 +898,7 @@ class Scene {
   loadBodybag() {
     const gltfLoader = new GLTFLoader();
     let bodybag = new GLTFObject(
-      "/public/old_soviet_radio_tower.glb",
+      "/~smegagraphics/public/old_soviet_radio_tower.glb",
       [800, 0, 0],
       [0, Math.PI, 0],
       [0.5, 0.5, 0.5],
@@ -910,7 +910,7 @@ class Scene {
   loadGarage() {
     const gltfLoader = new GLTFLoader();
     let bodybag = new GLTFObject(
-      "/public/gas_station.glb",
+      "/~smegagraphics/public/gas_station.glb",
       [-800, -10, -800],
       [0, Math.PI, 0],
       [15, 15, 15],
@@ -923,7 +923,7 @@ class Scene {
   loadshopmall() {
     const gltfLoader = new GLTFLoader();
     let bodybag = new GLTFObject(
-      "/public/shopping_mall.glb",
+      "/~smegagraphics/public/shopping_mall.glb",
       [-200, 0, 200],
       [0, 0, 0],
       [10, 10, 10],
@@ -936,7 +936,7 @@ class Scene {
   loadambulance() {
     const gltfLoader = new GLTFLoader();
     let bodybag = new GLTFObject(
-      "/public/ambulance.glb",
+      "/~smegagraphics/public/ambulance.glb",
       [510, 0, -250],
       [0, Math.PI / 4, 0],
       [15, 15, 15],
@@ -949,7 +949,7 @@ class Scene {
   loadHospital() {
     const gltfLoader = new GLTFLoader();
     let hospital = new GLTFObject(
-      "/public/zombie_hospital.glb",
+      "/~smegagraphics/public/zombie_hospital.glb",
       [500, 0, -800],
       [0, 0, 0],
       [15, 15, 15],
@@ -962,7 +962,7 @@ class Scene {
   loadGravestones() {
     const gltfLoader = new GLTFLoader();
     let scene;
-    gltfLoader.load("/public/gravestones.glb", (gltf) => {
+    gltfLoader.load("/~smegagraphics/public/gravestones.glb", (gltf) => {
       scene = gltf.scene;
       scene.scale.set(10, 10, 10); // Adjust scale if needed
       scene.position.set(0, 0, -150); // Position th
@@ -1084,7 +1084,7 @@ class Scene {
     geometry.computeVertexNormals();
     // Load the grass texture
     //const textureLoader = new THREE.TextureLoader();
-    const grassTexture = textureLoader.load("/public/road.jpg"); // Path to your texture image
+    const grassTexture = textureLoader.load("/~smegagraphics/public/road.jpg"); // Path to your texture image
 
     // Optionally, adjust texture properties to repeat it
     grassTexture.wrapS = THREE.RepeatWrapping;
@@ -1245,7 +1245,7 @@ class Scene {
 
     // Load cloud texture and create clouds
     const loader = new THREE.TextureLoader();
-    loader.load("/public/textures/smoke.png", (texture) => {
+    loader.load("/~smegagraphics/public/textures/smoke.png", (texture) => {
       const cloudGeo = new THREE.PlaneGeometry(500, 500);
       const cloudMaterial = new THREE.MeshLambertMaterial({
         map: texture,
