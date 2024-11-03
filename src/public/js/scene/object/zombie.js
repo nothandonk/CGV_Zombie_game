@@ -143,23 +143,23 @@ class Zombie {
             case 'normal':
                 this.speed = 0.4;
                 this.health = 100;
-                this.loadModel('/public/zombie1.glb');
+                this.loadModel('/~smegagraphics/public/zombie1.glb');
                 break;
             case 'fast':
                 this.speed = 0.6;
                 this.health = 150;
-                this.loadModel('/public/zombie2.glb');
+                this.loadModel('/~smegagraphics/public/zombie2.glb');
                 break;
             case 'crawling':
                 this.speed = 0.5;
                 this.health = 200;
-                this.loadModel('/public/zombie3.glb');
+                this.loadModel('/~smegagraphics/public/zombie3.glb');
                 break;
 
       default:
         this.speed = 0.4;
         this.health = 100;
-        this.loadModel("/public/zombie1.glb");
+        this.loadModel("/~smegagraphics/public/zombie1.glb");
         break;
     }
   }

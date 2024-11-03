@@ -897,9 +897,9 @@
     <script src="https://cdn.jsdelivr.net/npm/noisejs@2.0.0/index.min.js"></script>
     <script type="module">
       import * as THREE from "three";
-      import World from "/public/js/scene/scene.js";
+      import World from "~smegagraphics/public/js/scene/scene.js";
       import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
-      import { GLTFObject } from "/public/js/scene/object/object.js";
+      import { GLTFObject } from "~smegagraphics/public/js/scene/object/object.js";
       import { Sky } from "three/addons/objects/Sky.js";
 
       // Menu functions
@@ -923,7 +923,7 @@
         //game loop
 
         const gun = new GLTFObject(
-          "/public/m4.glb",
+          "~smegagraphics/public/m4.glb",
           [2, -3.2, -6],
     [0, Math.PI, 0],
     [2.5, 2.5, 2.5],
@@ -1027,14 +1027,14 @@
       const clock = new THREE.Clock();
 
       const loader = new GLTFLoader();
-      loader.load("/public/fobbing.glb", (gltf) => {
+      loader.load("~smegagraphics/public/fobbing.glb", (gltf) => {
         const obj = gltf.scene;
         obj.rotation.x = -Math.PI / 2;
         obj.rotation.z = Math.PI / 6;
         obj.position.set(0, -5, 4);
         scene.add(obj);
       });
-      loader.load("/public/zombie1.glb", (gltf) => {
+      loader.load("~smegagraphics/public/zombie1.glb", (gltf) => {
         const obj = gltf.scene;
         obj.scale.set(2, 2, 2);
         obj.position.set(0, -3, 26);
