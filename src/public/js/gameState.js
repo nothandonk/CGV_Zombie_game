@@ -185,18 +185,28 @@ class GameState {
 
   startNewWave() {
     this.currentWave++;
-    this.zombiesRemainingInWave =
-      this.zombiesPerWave + (this.currentWave - 1) * 10;
+    this.zombiesRemainingInWave = this.zombiesPerWave + (this.currentWave - 1) * 10;
     if (this.waveCompleteScreen) {
       this.waveCompleteScreen.style.display = "none";
     }
 
-    for (let i = 0; i < this.zombiesRemainingInWave; i++) {
-      this.world.spawnZombie({
-        x: this._getRandomNumber(),
-        y: 0,
-        z: this._getRandomNumber(),
+    if (this.world.zombies) {
+      this.world.zombies.forEach(zombie => {
+        if (zombie && zombie.removeFromScene) {
+          zombie.removeFromScene();
+        }
       });
+      this.world.zombies = [];
+    }
+
+    for (let i = 0; i < this.zombiesRemainingInWave; i++) {
+      setTimeout(() => {
+        this.world.spawnZombie({
+          x: this._getRandomNumber(),
+          y: 0,
+          z: this._getRandomNumber(),
+        });
+      }, i * 100);
     }
     this.updateUI();
   }

@@ -36,6 +36,8 @@ class Zombie {
     this.lastPathUpdate = 0;
     this.pathVisualization = null;
 
+    this.isBeingRemoved = false;
+
     // Reset audio properties
     this.listener = null;
     this.zombieSound = null;
@@ -474,67 +476,78 @@ update(delta) {
     
     this.isDead = true;
     this.world.gameState.killZombie();
-    
     this.speed = 0;
 
-    if (this.zombieSound) {
-        try {
-          if (this.zombieSound.isPlaying) {
-            this.zombieSound.stop();
-          }
-          this.zombieSound.disconnect();
-        } catch (error) {
-          console.error('Error cleaning up zombie sound:', error);
-        }
-      }
-    
-    if (this.model) {
-        this.model.traverse((child) => {
-            if (child.isMesh) {
-                this.shooter.removeTarget(child);
-            }
-        });
-        this.shooter.removeFromMinimap(this.model)
-    }
-
     if (this.animations['dying']) {
-        this.playAnimation('dying');
-        
-        setTimeout(() => {
-            this.removeFromScene();
-        }, 1000);
-    } else {
+      this.playAnimation('dying');
+      
+      setTimeout(() => {
         this.removeFromScene();
+      }, 1000);
+    } else {
+      this.removeFromScene();
     }
-}
+  }
 
 removeFromScene() {
-    if (this.model) {
-        this.scene.remove(this.model);
-        
-        this.model.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-                child.geometry.dispose();
-                child.material.dispose();
-            }
-        });
-        
-        this.model = null;
+  if (this.isBeingRemoved) return;
+  this.isBeingRemoved = true;
+
+  if (this.zombieSound) {
+    try {
+      if (this.zombieSound.isPlaying) {
+        this.zombieSound.stop();
+      }
+      this.zombieSound.disconnect();
+    } catch (error) {
+      console.error('Error cleaning up zombie sound:', error);
     }
+  }
+
+  if (this.model) {
+    this.model.traverse((child) => {
+      if (child.isMesh) {
+        this.shooter.removeTarget(child);
+        delete child.userData.zombieInstance;
+      }
+    });
     
-    if (this.mixer) {
-        this.mixer.stopAllAction();
-        this.mixer = null;
-    }
-    
-    this.boundingBox = null;
-    
-    if (this.world.zombies) {
-        const index = this.world.zombies.indexOf(this);
-        if (index > -1) {
-            this.world.zombies.splice(index, 1);
+    this.shooter.removeFromMinimap(this.model);
+
+    this.model.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        if (child.geometry) {
+          child.geometry.dispose();
         }
+        if (child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach(material => material.dispose());
+          } else {
+            child.material.dispose();
+          }
+        }
+      }
+    });
+
+    this.scene.remove(this.model);
+    this.model = null;
+  }
+
+  if (this.mixer) {
+    this.mixer.stopAllAction();
+    this.mixer = null;
+  }
+
+  this.boundingBox = null;
+  this.animations = {};
+  this.currentAction = null;
+
+  if (this.world.zombies) {
+    const index = this.world.zombies.indexOf(this);
+    if (index > -1) {
+      this.world.zombies.splice(index, 1);
     }
+  }
 }
 }
 
