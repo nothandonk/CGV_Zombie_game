@@ -180,13 +180,13 @@ class GameState {
   }
 
   _getRandomNumber() {
-    return Math.floor(Math.random() * 2001) - 1000;
+    return Math.floor(Math.random() * 1001) - 500;
   }
 
   startNewWave() {
     this.currentWave++;
     this.zombiesRemainingInWave =
-      this.zombiesPerWave + (this.currentWave - 1) * 10;
+      this.zombiesPerWave + (this.currentWave - 1) * 5;
     if (this.waveCompleteScreen) {
       this.waveCompleteScreen.style.display = "none";
     }
