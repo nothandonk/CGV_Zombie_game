@@ -191,12 +191,23 @@ class GameState {
       this.waveCompleteScreen.style.display = "none";
     }
 
-    for (let i = 0; i < this.zombiesRemainingInWave; i++) {
-      this.world.spawnZombie({
-        x: this._getRandomNumber(),
-        y: 0,
-        z: this._getRandomNumber(),
+    if (this.world.zombies) {
+      this.world.zombies.forEach(zombie => {
+        if (zombie && zombie.removeFromScene) {
+          zombie.removeFromScene();
+        }
       });
+      this.world.zombies = [];
+    }
+
+    for (let i = 0; i < this.zombiesRemainingInWave; i++) {
+      setTimeout(() => {
+        this.world.spawnZombie({
+          x: this._getRandomNumber(),
+          y: 0,
+          z: this._getRandomNumber(),
+        });
+      }, i * 100);
     }
     this.updateUI();
   }
