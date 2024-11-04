@@ -241,7 +241,7 @@ class Zombie {
             case 'normal':
                 this.speed = 0.4;
                 this.health = 100;
-                this.loadModel('zombie11.glb');
+                this.loadModel('zombie1.glb');
                 break;
             case 'fast':
                 this.speed = 0.6;
@@ -257,7 +257,7 @@ class Zombie {
       default:
         this.speed = 0.4;
         this.health = 100;
-        this.loadModel("zombie11.glb");
+        this.loadModel("zombie1.glb");
         break;
     }
   }
